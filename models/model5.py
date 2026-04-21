@@ -247,14 +247,19 @@ class ExploitationStrategyGenerator:
                 severity = cve_item.get("severity", "LOW")
                 cvss = cve_item.get("cvss", 0.0)
 
-                # --- STEP 1: CHECK PUBLIC EXPLOIT EVIDENCE (STRICT GATE) ---
+                # --- STEP 1: CHECK EXPLOIT EVIDENCE (EDB + ACTIVE VALIDATOR) ---
                 edb_findings = self.edb_connector.search_by_cve(cve_id)
-                has_exploit_evidence = len(edb_findings) > 0
+                validation_status = cve_item.get("validation_status")
+                
+                has_public_exploit = len(edb_findings) > 0
+                has_active_proof = (validation_status == "Exploitable")
+                
+                has_evidence = has_public_exploit or has_active_proof
 
                 # --- STEP 2: GENERATE CONTENT BASED ON EVIDENCE ---
                 
-                if has_exploit_evidence:
-                    # CASE A: EXPLOIT EXISTS -> GENERATE CHAIN (Task 3)
+                if has_evidence:
+                    # CASE A: EVIDENCE EXISTS -> GENERATE CHAIN
                     raw_chain = self._build_attack_chain(cwe_id, tech_name)
                     
                     # Post-processing: Remove consecutive duplicates
@@ -265,17 +270,26 @@ class ExploitationStrategyGenerator:
                             
                     mitre_tech = self._map_mitre(chain)
                     if not mitre_tech or mitre_tech == "N/A":
-                        mitre_tech = "No MITRE mapping available"  # Task 5 Rule 3
+                        mitre_tech = "No MITRE mapping available"
 
-                    explanation = "Theoretical attack path based on documented exploit"  # Task 3 Rule 2.1
-                    status = "Public Exploit Available"
+                    if has_active_proof:
+                        explanation = "Confirmed attack path verified by active exploit simulation"
+                        status = "Active Exploit Verified"
+                    else:
+                        explanation = "Theoretical attack path based on documented exploit"
+                        status = "Public Exploit Available"
                     
                 else:
-                    # CASE B: NO EXPLOIT -> NO CHAIN (STRICT TASK 3)
+                    # CASE B: NO EVIDENCE -> NO CHAIN
                     chain = None
-                    mitre_tech = "No MITRE mapping available" # Task 5
-                    explanation = "No verified public exploit — exploitation path undetermined" # Task 3 Rule 3
-                    status = "No Public Exploit Evidence"
+                    mitre_tech = "No MITRE mapping available"
+                    
+                    if validation_status in ["Patched", "Blocked by WAF"]:
+                        explanation = f"Active simulation returned status '{validation_status}' — exploitation highly unlikely"
+                        status = f"Mitigated ({validation_status})"
+                    else:
+                        explanation = "No verified public exploit — exploitation path undetermined"
+                        status = "No Public Exploit Evidence"
 
                 # --- PORT DEDUPLICATION FIX ---
                 # Extract unique ports from scan results

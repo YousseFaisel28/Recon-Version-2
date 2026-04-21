@@ -12,6 +12,7 @@ import joblib
 from scipy.sparse import hstack
 from typing import Dict, List, Optional
 from utils.tech_fingerprint_tool import fingerprint_technologies
+from models.active_validator import validate_cve
 
 # Global variables for model artifacts
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -236,18 +237,37 @@ def run_technology_fingerprinting(urls_data):
             
             # Extract filtered CVEs from status result
             filtered_cves = vuln_status.get("cves", [])
+
+            # Step 2c: Active Validation (Task 2)
+            verified_cves = []
+            unverified_cves = []
             
+            for cve_item in filtered_cves:
+                cve_id = cve_item.get("cve")
+                if cve_id:
+                    validation_result = validate_cve(cve_id, url)
+                    status = validation_result.get("validation_status", "Unknown")
+                    cve_item["validation_status"] = status
+                    cve_item["http_response_code"] = validation_result.get("http_response_code")
+                    
+                    if status == "Exploitable":
+                        verified_cves.append(cve_item)
+                    else:
+                        unverified_cves.append(cve_item)
+
             tech_result = {
                 "technology": tech_name,
                 "version": version,
                 "category": tech.get("category", "Unknown"),
-                # Task 1 Rule 2: Extract ONLY CVEs where version range matches
-                "cves": filtered_cves,
                 "vulnerability_status": vuln_status["status"],
                 "confidence": vuln_status["confidence"],
                 "max_cvss": max([c.get("cvss", 0) for c in filtered_cves]) if filtered_cves else 0.0,
+                # New Categorized Slots
+                "verified_vulnerabilities": verified_cves,
+                "unverified_vulnerabilities": unverified_cves,
+                "cves": filtered_cves,
+                "all_cves": filtered_cves,
                 "source": tech.get("source", ""),
-                "similarity_score": None,
                 "metadata": {
                     "port": tech.get("port"),
                     "raw_data": tech.get("raw_data", {})

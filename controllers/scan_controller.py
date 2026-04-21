@@ -258,7 +258,7 @@ def scan_domain():
                     )
 
                     try:
-                        tech_results = future.result(timeout=30)
+                        tech_results = future.result(timeout=300) # Increased for Active Validation
                     except FutureTimeoutError:
                         tech_results = []
 
@@ -277,6 +277,9 @@ def scan_domain():
                                     "category": tech.get("category"),
                                     "source": tech.get("source"),
                                     "vulnerability_status": tech.get("vulnerability_status"),
+                                    "verified_vulnerabilities": tech.get("verified_vulnerabilities", []),
+                                    "unverified_vulnerabilities": tech.get("unverified_vulnerabilities", []),
+                                    "cves": tech.get("cves", []),
                                     "confidence": tech.get("confidence"),
                                     "max_cvss": tech.get("max_cvss"),
                                     "similarity_score": tech.get("similarity_score"),
@@ -388,6 +391,7 @@ def scan_domain():
                             "cvss_score": float(cve.get("cvss", 0.0)),
                             "exploit_available": 1 if tech.get("source") == "ExploitDB" else 0,
                             "cve_id": cve.get("cve"),
+                            "validation_status": cve.get("validation_status"),
                             "technology_stack": tech.get("technology"),
                             "is_public_port": 1,
                             "anomaly_flag": 1 if anomaly_data.get("status") == "suspicious" else 0,
