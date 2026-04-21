@@ -1,0 +1,204 @@
+/* ============================================================
+   RECONX | Black & White Cyber-Themed Landing Page 
+   Clean • Modern • Animated • Matches Scan Page Theme
+============================================================ */
+
+/* GLOBAL */
+body {
+  margin: 0;
+  font-family: "Poppins", sans-serif;
+  overflow-x: hidden;
+  color: white;
+
+  background-image: url('../assets/images/paper-style-white-monochrome-background_23-2149023490.avif');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+}
+
+/* Dark overlay (same as scan page) */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+  z-index: -1;
+}
+
+/* MAIN HERO SECTION */
+.center-content {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+
+  padding: 0 30px;
+
+  animation: fadeIn 1.3s ease forwards;
+}
+
+/* Subtle Fade-In Animation */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* LOGO */
+.home-logo {
+  width: 150px;
+  margin-bottom: 25px;
+
+  filter: grayscale(100%) brightness(1.5);
+  animation: float 4s ease-in-out infinite;
+}
+
+/* Floating Animation */
+@keyframes float {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0); }
+}
+
+/* TITLE */
+.main-title {
+  font-size: 3.8rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin-bottom: 20px;
+
+  color: white;
+  text-shadow: 0 0 18px rgba(255, 255, 255, 0.4);
+}
+
+.main-title span {
+  color: #e5e5e5; /* light gray */
+}
+
+/* QUOTE */
+.quote {
+  font-size: 1.4rem;
+  max-width: 800px;
+
+  margin-bottom: 45px;
+  line-height: 1.6;
+
+  font-style: italic;
+  color: #cccccc;
+}
+
+/* BUTTON */
+.journey-btn {
+  background: white;
+  color: black;
+
+  padding: 16px 40px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-size: 1.2rem;
+  font-weight: 700;
+
+  transition: 0.25s ease;
+  box-shadow: 0 0 12px rgba(255,255,255,0.4);
+}
+
+.journey-btn:hover {
+  background: #e5e5e5;
+  transform: translateY(-3px);
+  box-shadow: 0 0 20px rgba(255,255,255,0.7);
+}
+
+/* ABOUT SECTION */
+.about-section {
+  padding: 80px 25px;
+  text-align: center;
+
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(8px);
+  border-top: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.about-section h2 {
+  color: white;
+  font-size: 2.4rem;
+  margin-bottom: 25px;
+}
+
+.about-section p {
+  max-width: 850px;
+  margin: 0 auto;
+
+  color: #dddddd;
+  line-height: 1.8;
+  font-size: 1.1rem;
+}
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+  .main-title { font-size: 2.5rem; }
+  .quote { font-size: 1.2rem; }
+}
+/* ================================
+   STATIC FEATURE SIDEBAR PANEL
+================================ */
+.feature-panel {
+  position: fixed;
+  left: 40px;
+  top: 50%;
+  transform: translateY(-50%);
+
+  width: 320px;
+  padding: 25px 30px;
+
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 16px;
+
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.3);
+
+  z-index: 2;
+  animation: fadeIn 0.8s ease forwards;
+}
+
+.feature-panel h3 {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: white;
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.feature-panel ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.feature-panel li {
+  font-size: 1rem;
+  color: #e4e4e4;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  opacity: 0;
+  transform: translateX(-15px);
+  animation: slideUp 0.5s ease forwards;
+}
+
+.feature-panel li:nth-child(1) { animation-delay: 0.2s; }
+.feature-panel li:nth-child(2) { animation-delay: 0.35s; }
+.feature-panel li:nth-child(3) { animation-delay: 0.5s; }
+.feature-panel li:nth-child(4) { animation-delay: 0.65s; }
+.feature-panel li:nth-child(5) { animation-delay: 0.8s; }
+.feature-panel li:nth-child(6) { animation-delay: 0.95s; }
+
+/* Soft slide animation */
+@keyframes slideUp {
+  from { opacity: 0; transform: translateX(-15px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+

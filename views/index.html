@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en" class="dark scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ReconX | Intelligence-Driven Threat Reconnaissance</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'] },
+          colors: {
+            cyber: {
+              background: '#0B0F19',
+              card: 'rgba(255, 255, 255, 0.03)',
+              border: 'rgba(255, 255, 255, 0.08)',
+              accent: '#10B981',
+              accentGlow: 'rgba(16, 185, 129, 0.4)',
+              textPrimary: '#FFFFFF',
+              textSecondary: '#9CA3AF'
+            }
+          },
+          animation: {
+            'fade-in': 'fadeIn 0.5s ease-out',
+            'slide-up': 'slideUp 0.6s ease-out',
+            'float': 'float 6s ease-in-out infinite'
+          },
+          keyframes: {
+            fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+            slideUp: { '0%': { opacity: '0', transform: 'translateY(20px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+            float: { '0%, 100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-15px)' } }
+          }
+        }
+      }
+    }
+  </script>
+  
+  <style>
+    body { background: #0B0F19; color: #FFFFFF; }
+    .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5); border-radius: 20px; transition: all 0.3s ease; }
+    .text-gradient { background: linear-gradient(135deg, #10B981 0%, #3B82F6 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; }
+    .btn-glow { box-shadow: 0 0 15px rgba(16, 185, 129, 0.4); transition: all 0.3s; }
+    .btn-glow:hover { box-shadow: 0 0 30px rgba(16, 185, 129, 0.6); transform: translateY(-2px); }
+  </style>
+</head>
+
+<body class="antialiased overflow-x-hidden relative">
+
+  <!-- Background Orbs -->
+  <div class="absolute top-0 right-0 -mr-40 -mt-40 w-[600px] h-[600px] bg-cyber-accentglow rounded-full blur-[150px] pointer-events-none opacity-20"></div>
+  <div class="absolute top-1/2 left-0 -ml-40 w-[500px] h-[500px] bg-blue-600/20 rounded-full blur-[150px] pointer-events-none opacity-20"></div>
+  
+  <!-- Navbar -->
+  <nav class="fixed w-full z-50 glass-card rounded-none border-t-0 border-l-0 border-r-0 border-b border-white/10 bg-cyber-background/60">
+    <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <img src="/static/assets/images/logo.png" alt="ReconX Logo" class="h-8 w-auto" onerror="this.outerHTML='<i class=\\\'ph-fill ph-shield-check text-3xl text-cyber-accent\\\'></i>'" />
+        <span class="text-xl md:text-2xl font-bold tracking-tight text-white">ReconX</span>
+      </div>
+      <div class="flex items-center gap-4">
+        <a href="/login.html" class="text-sm font-semibold text-gray-300 hover:text-white transition-colors">Sign In</a>
+        <a href="/signup.html" class="px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/10 text-white text-sm font-bold transition-all shadow-md">Deploy Free</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="relative pt-40 pb-20 px-6 max-w-7xl mx-auto flex flex-col items-center text-center">
+    <div class="animate-slide-up" style="animation-delay: 0.1s;">
+      <span class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-sm font-semibold mb-8">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Reconnaissance v2.0 is Live
+      </span>
+      <h1 class="text-5xl md:text-7xl font-bold tracking-tighter mb-6 leading-tight max-w-4xl mx-auto">
+        Next-Generation <br />
+        <span class="text-gradient">Threat Intelligence</span>
+      </h1>
+      <blockquote class="text-lg md:text-xl text-cyber-textSecondary max-w-2xl mx-auto mb-10 leading-relaxed italic border-l-4 border-cyber-accent pl-6 text-left" style="font-style: italic;">
+        “Empowering defenders with intelligent reconnaissance — security through awareness.”
+      </blockquote>
+      
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+        <a href="signup.html" class="w-full sm:w-auto px-8 py-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold text-lg btn-glow flex items-center justify-center gap-2">
+          Start Your Journey <i class="ph-bold ph-arrow-right"></i>
+        </a>
+        <a href="#about" class="w-full sm:w-auto px-8 py-4 rounded-xl bg-white/5 border border-white/10 text-white font-bold text-lg hover:bg-white/10 transition-colors flex items-center justify-center gap-2">
+          How it Works <i class="ph-bold ph-caret-down"></i>
+        </a>
+      </div>
+    </div>
+    
+    <div class="mt-20 w-full max-w-5xl relative animate-slide-up animate-float" style="animation-delay: 0.3s; animation-duration: 6s; animation-iteration-count: infinite;">
+       <!-- Mockup UI Element -->
+       <div class="glass-card p-2 rounded-2xl border border-white/10 shadow-2xl relative overflow-hidden">
+         <div class="absolute inset-0 bg-gradient-to-t from-cyber-background/90 via-transparent to-transparent z-10 pointer-events-none"></div>
+         <div class="h-8 border-b border-white/5 flex items-center px-4 gap-2 bg-white/5 rounded-t-xl">
+           <div class="w-3 h-3 rounded-full bg-red-500"></div><div class="w-3 h-3 rounded-full bg-yellow-500"></div><div class="w-3 h-3 rounded-full bg-green-500"></div>
+         </div>
+         <div class="p-8 grid grid-cols-1 md:grid-cols-3 gap-6 relative z-20">
+           <div class="h-32 rounded-xl bg-white/5 border border-white/10 p-5 flex flex-col justify-between">
+              <div class="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center"><i class="ph-fill ph-radar text-emerald-400"></i></div>
+              <div>
+                <div class="w-16 h-3 bg-white/20 rounded mb-2"></div>
+                <div class="w-24 h-6 bg-white/50 rounded"></div>
+              </div>
+           </div>
+           <div class="h-32 rounded-xl bg-white/5 border border-white/10 p-5 flex flex-col justify-between">
+              <div class="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center"><i class="ph-fill ph-shield-check text-blue-400"></i></div>
+              <div>
+                <div class="w-16 h-3 bg-white/20 rounded mb-2"></div>
+                <div class="w-24 h-6 bg-white/50 rounded"></div>
+              </div>
+           </div>
+           <div class="h-32 rounded-xl bg-white/5 border border-white/10 p-5 flex flex-col justify-between">
+              <div class="w-10 h-10 rounded-lg bg-red-500/20 flex items-center justify-center"><i class="ph-fill ph-bug text-red-400"></i></div>
+              <div>
+                <div class="w-16 h-3 bg-white/20 rounded mb-2"></div>
+                <div class="w-24 h-6 bg-white/50 rounded"></div>
+              </div>
+           </div>
+           
+           <div class="md:col-span-3 h-64 rounded-xl bg-white/5 border border-white/10 p-6 flex flex-col">
+              <div class="w-40 h-4 bg-white/20 rounded mb-8"></div>
+              <div class="flex-1 border-b border-l border-white/10 relative flex items-end gap-3 p-4 opacity-80">
+                 <div class="flex-1 bg-gradient-to-t from-emerald-500/60 to-emerald-400/80 rounded-t-sm h-[40%] hover:h-[45%] transition-all"></div>
+                 <div class="flex-1 bg-gradient-to-t from-emerald-500/60 to-emerald-400/80 rounded-t-sm h-[60%] hover:h-[65%] transition-all"></div>
+                 <div class="flex-1 bg-gradient-to-t from-emerald-500/60 to-emerald-400/80 rounded-t-sm h-[30%] hover:h-[35%] transition-all"></div>
+                 <div class="flex-1 bg-gradient-to-t from-emerald-500/60 to-emerald-400/80 rounded-t-sm h-[80%] hover:h-[85%] transition-all"></div>
+                 <div class="flex-1 bg-gradient-to-t from-emerald-500/60 to-emerald-400/80 rounded-t-sm h-[50%] hover:h-[55%] transition-all"></div>
+                 <div class="flex-1 bg-gradient-to-t from-emerald-500/60 to-emerald-400/80 rounded-t-sm h-[95%] hover:h-[100%] transition-all shadow-[0_0_15px_rgba(52,211,153,0.5)]"></div>
+              </div>
+           </div>
+         </div>
+       </div>
+    </div>
+  </section>
+
+  <!-- About Section -->
+  <section id="about" class="py-24 px-6 relative z-10">
+    <div class="max-w-7xl mx-auto">
+      <div class="text-center mb-16">
+        <h2 class="text-3xl md:text-5xl font-bold mb-6">About ReconX</h2>
+        <div class="w-24 h-1 bg-cyber-accent mx-auto rounded-full"></div>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+        <div class="glass-card p-10 relative overflow-hidden group">
+           <div class="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+           <i class="ph ph-cpu text-6xl text-emerald-400 mb-6 drop-shadow-[0_0_15px_rgba(52,211,153,0.5)]"></i>
+           <h3 class="text-2xl font-bold mb-4">AI-Powered Analysis</h3>
+           <p class="text-cyber-textSecondary leading-relaxed">
+             ReconX is an AI-powered reconnaissance and vulnerability awareness system that helps
+             organizations detect, prioritize, and fix security risks before attackers exploit them.
+           </p>
+        </div>
+        
+        <div class="glass-card p-10 relative overflow-hidden group">
+           <div class="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+           <i class="ph ph-shield-check text-6xl text-blue-400 mb-6 drop-shadow-[0_0_15px_rgba(59,130,246,0.5)]"></i>
+           <h3 class="text-2xl font-bold mb-4">Defensive Posture</h3>
+           <p class="text-cyber-textSecondary leading-relaxed">
+             We are a team of passionate cybersecurity and AI enthusiasts dedicated to revolutionizing
+             defensive reconnaissance. Our mission is to provide automated, intelligent insights.
+           </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="border-t border-white/10 bg-cyber-background/80 py-10 px-6 mt-10 relative z-10">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-cyber-textSecondary text-sm">
+      <div class="flex items-center gap-2">
+        <img src="/static/assets/images/logo.png" alt="ReconX" class="h-6 w-auto opacity-70" onerror="this.outerHTML='<i class=\\\'ph-fill ph-shield-check text-xl\\\'></i>'" />
+        <span>© 2026 ReconX Intelligence. All rights reserved.</span>
+      </div>
+      <div class="flex gap-6">
+        <a href="#" class="hover:text-white transition-colors">Privacy</a>
+        <a href="#" class="hover:text-white transition-colors">Terms</a>
+        <a href="login.html" class="hover:text-cyber-accent transition-colors">Login</a>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

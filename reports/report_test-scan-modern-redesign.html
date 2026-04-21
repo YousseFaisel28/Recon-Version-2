@@ -1,0 +1,227 @@
+
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <style>
+            /* Compatibility CSS: Avoiding Grid/Flexbox where possible for wkhtmltopdf */
+            body { 
+                font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; 
+                color: #1e293b; 
+                background: #ffffff; 
+                margin: 0; padding: 0; 
+                line-height: 1.5; 
+                font-size: 11pt; 
+            }
+            .clearfix:after { content: ""; display: table; clear: both; }
+            
+            /* Cover Page */
+            .cover { 
+                height: 950pt; 
+                background: #0f172a; 
+                color: white; 
+                text-align: center; 
+                padding-top: 150pt; 
+                page-break-after: always;
+            }
+            .cover h1 { font-size: 42pt; font-weight: 800; margin: 0; letter-spacing: -1pt; }
+            .cover p { font-size: 16pt; color: #3b82f6; text-transform: uppercase; letter-spacing: 3pt; font-weight: 600; margin-top: 10pt; }
+            .cover-meta { margin-top: 300pt; font-size: 12pt; color: #64748b; }
+            .cover-meta b { color: white; display: block; font-size: 14pt; margin-top: 5pt; }
+
+            /* Header Section */
+            .report-header { background: #0f172a; color: white; padding: 30pt 40pt; box-sizing: border-box; }
+            .report-header h2 { margin: 0; font-size: 20pt; }
+            .report-header p { margin: 5pt 0 0 0; color: #3b82f6; font-size: 10pt; font-weight: 700; text-transform: uppercase; }
+
+            /* Dashboard Grid (Float based) */
+            .dashboard { padding: 40pt; background: #f8fafc; border-bottom: 2px solid #e2e8f0; }
+            .card-wrapper { width: 23%; float: left; margin-right: 2%; box-sizing: border-box; }
+            .card-wrapper:last-child { margin-right: 0; }
+            .metric-card { 
+                background: white; 
+                padding: 20pt 10pt; 
+                border-radius: 10pt; 
+                border: 1px solid #e2e8f0; 
+                text-align: center; 
+                box-shadow: 0 4pt 6pt -1pt rgba(0,0,0,0.05);
+            }
+            .metric-card .val { font-size: 26pt; font-weight: 800; display: block; color: #0f172a; }
+            .metric-card .lbl { font-size: 8pt; color: #64748b; text-transform: uppercase; font-weight: 700; margin-top: 5pt; display: block; }
+            .card-acc-risk { border-top: 4pt solid #3b82f6; }
+            .card-acc-vuln { border-top: 4pt solid #ef4444; }
+
+            /* Content Sections */
+            .container { padding: 40pt; }
+            .section-title { font-size: 22pt; font-weight: 800; color: #0f172a; margin-bottom: 20pt; border-bottom: 3pt solid #3b82f6; display: inline-block; padding-bottom: 5pt; }
+            
+            /* Findings Cards */
+            .finding-card { border: 1px solid #e2e8f0; border-radius: 12pt; margin-bottom: 35pt; overflow: hidden; page-break-inside: avoid; }
+            .finding-header { background: #f1f5f9; padding: 15pt 20pt; border-bottom: 1px solid #e2e8f0; }
+            .finding-header .type { font-size: 12pt; font-weight: 800; }
+            .severity-badge { float: right; padding: 4pt 10pt; border-radius: 6pt; color: white; font-size: 9pt; font-weight: 700; }
+            
+            .sev-CRITICAL { background: #ef4444; }
+            .sev-HIGH { background: #f97316; }
+            .sev-MEDIUM { background: #eab308; }
+            .sev-LOW { background: #10b981; }
+
+            .finding-meta { padding: 10pt 20pt; background: #ffffff; border-bottom: 1px solid #e2e8f0; font-size: 9pt; color: #64748b; }
+            .finding-meta b { color: #1e293b; margin-right: 15pt; }
+
+            .finding-body { padding: 20pt; }
+            .finding-section { margin-bottom: 15pt; }
+            .finding-section h4 { font-size: 9pt; text-transform: uppercase; color: #64748b; margin: 0 0 5pt 0; letter-spacing: 1pt; }
+            .finding-section p { margin: 0; font-size: 11pt; color: #334155; }
+            
+            .remediation-box { background: #f0fdf4; border: 1px solid #bbf7d0; padding: 15pt; border-radius: 8pt; margin-top: 15pt; }
+            .remediation-box h4 { color: #14532d; font-weight: 800; margin-bottom: 10pt; }
+            .remediation-box ul { margin: 0; padding-left: 15pt; list-style-type: square; }
+            .remediation-box li { margin-bottom: 5pt; color: #166534; }
+
+            /* Layout Grid (Float) */
+            .col-2 { width: 48%; float: left; margin-right: 4%; }
+            .col-2:last-child { margin-right: 0; }
+
+            @page { margin: 0; }
+        </style>
+    </head>
+    <body>
+        <div class="cover">
+            <h1>SECURITY ASSESSMENT</h1>
+            <p>Enterprise Vulnerability Audit</p>
+            <div class="cover-meta">
+                TARGET DOMAIN<b>example.com</b><br>
+                REPORT GENERATED<b>April 06, 2026</b><br>
+                SCAN IDENTIFIER<b>RX-TEST-SCAN-MO</b>
+            </div>
+        </div>
+
+        <div class="report-header">
+            <h2>Executive Dashboard</h2>
+            <p>Assessment Summary for example.com</p>
+        </div>
+
+        <div class="dashboard clearfix">
+            <div class="card-wrapper">
+                <div class="metric-card">
+                    <span class="val">3</span>
+                    <span class="lbl">Subdomains</span>
+                </div>
+            </div>
+            <div class="card-wrapper">
+                <div class="metric-card">
+                    <span class="val">3</span>
+                    <span class="lbl">Open Ports</span>
+                </div>
+            </div>
+            <div class="card-wrapper">
+                <div class="metric-card card-acc-vuln">
+                    <span class="val">4</span>
+                    <span class="lbl">Vulnerabilities</span>
+                </div>
+            </div>
+            <div class="card-wrapper">
+                <div class="metric-card card-acc-risk">
+                    <span class="val">26.7%</span>
+                    <span class="lbl">Risk Score</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+            <h3 class="section-title">Critical Security Findings</h3>
+            
+            
+            <div class="finding-card">
+                <div class="finding-header">
+                    <span class="severity-badge sev-CRITICAL">CRITICAL</span>
+                    <span class="type">CVE-2021-44228</span>
+                </div>
+                <div class="finding-meta clearfix">
+                    <div style="float: left;">SERVICE: <b>api.example.com</b></div>
+                    <div style="float: left;">CVSS: <b>10.0</b></div>
+                    <div style="float: left;">AFFECTED NODES: <b>1</b></div>
+                </div>
+                <div class="finding-body">
+                    <div class="clearfix">
+                        <div class="col-2">
+                            <div class="finding-section">
+                                <h4>IMPACT</h4>
+                                <p><b>Unauthorized access or service disruption via Web Server layer.</b></p>
+                            </div>
+                        </div>
+                        <div class="col-2">
+                            <div class="finding-section">
+                                <h4>TECHNICAL INSIGHT</h4>
+                                <p>Critical Log4Shell vulnerability detected in the application logging system. This allows for full remote code execution (RCE)....</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="finding-section" style="margin-top: 15pt; border-top: 1px solid #f1f5f9; padding-top: 15pt;">
+                        <h4>ATTACK SCENARIO</h4>
+                        <p style="font-style: italic; color: #64748b;">An attacker can send a crafted string to any input field that is logged, gaining full control over the server environment.</p>
+                    </div>
+
+                    <div class="remediation-box">
+                        <h4>REMEDIATION PLAN</h4>
+                        <ul>
+                            
+                            <li>Immediate Fix: Update Log4j to version 2.17.1 or higher.</li>
+                            
+                            <li>Hardening: Disable message lookup pattern globally.</li>
+                            
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="finding-card">
+                <div class="finding-header">
+                    <span class="severity-badge sev-HIGH">HIGH</span>
+                    <span class="type">CVE-2023-1234</span>
+                </div>
+                <div class="finding-meta clearfix">
+                    <div style="float: left;">SERVICE: <b>dev.example.com</b></div>
+                    <div style="float: left;">CVSS: <b>8.5</b></div>
+                    <div style="float: left;">AFFECTED NODES: <b>1</b></div>
+                </div>
+                <div class="finding-body">
+                    <div class="clearfix">
+                        <div class="col-2">
+                            <div class="finding-section">
+                                <h4>IMPACT</h4>
+                                <p><b>By navigating to /api/debug, an attacker can extract full environment variables and database credentials.</b></p>
+                            </div>
+                        </div>
+                        <div class="col-2">
+                            <div class="finding-section">
+                                <h4>TECHNICAL INSIGHT</h4>
+                                <p>Unauthenticated access to internal API endpoints discovered. This exposes sensitive developer data....</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="finding-section" style="margin-top: 15pt; border-top: 1px solid #f1f5f9; padding-top: 15pt;">
+                        <h4>ATTACK SCENARIO</h4>
+                        <p style="font-style: italic; color: #64748b;">By navigating to /api/debug, an attacker can extract full environment variables and database credentials.</p>
+                    </div>
+
+                    <div class="remediation-box">
+                        <h4>REMEDIATION PLAN</h4>
+                        <ul>
+                            
+                            <li>Immediate Fix: Restrict access to /api/debug via IP-based ACLs.</li>
+                            
+                            <li>Monitoring: Implement centralized authentication for all API routes.</li>
+                            
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </body>
+    </html>
+    

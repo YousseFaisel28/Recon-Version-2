@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ReconX | Authentication</title>
+  
+  <script>
+    // Early theme initialization
+    (function() {
+      const theme = localStorage.getItem('theme');
+      if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark', 'dark-mode');
+      } else {
+        document.documentElement.classList.remove('dark', 'dark-mode');
+      }
+    })();
+  </script>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'] },
+          colors: {
+            cyber: {
+              background: '#0B0F19',
+              card: 'rgba(255, 255, 255, 0.03)',
+              border: 'rgba(255, 255, 255, 0.08)',
+              accent: '#10B981',
+              accentGlow: 'rgba(16, 185, 129, 0.4)',
+              textPrimary: '#FFFFFF',
+              textSecondary: '#9CA3AF'
+            }
+          },
+          animation: {
+            'fade-in': 'fadeIn 0.5s ease-out',
+            'slide-up': 'slideUp 0.6s ease-out'
+          },
+          keyframes: {
+            fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+            slideUp: { '0%': { opacity: '0', transform: 'translateY(10px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } }
+          }
+        }
+      }
+    }
+  </script>
+  
+  <style>
+    body { background: radial-gradient(circle at top right, #111827, #0B0F19 100%); color: #FFFFFF; min-height: 100vh; }
+    .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5); border-radius: 20px; transition: all 0.3s ease; }
+    .form-input { width: 100%; padding: 0.875rem 1.25rem; border-radius: 12px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: white; outline: none; transition: all 0.2s; font-size: 0.95rem; }
+    .form-input:focus { border-color: #10B981; box-shadow: 0 0 10px rgba(16, 185, 129, 0.2); background: rgba(0,0,0,0.4); }
+    .btn-glow { box-shadow: 0 0 15px rgba(16, 185, 129, 0.3); transition: all 0.3s; }
+    .btn-glow:hover { box-shadow: 0 0 25px rgba(16, 185, 129, 0.5); transform: translateY(-1px); }
+  </style>
+</head>
+
+<body class="flex items-center justify-center relative overflow-hidden">
+  
+  <div class="absolute top-0 right-0 -mt-20 -mr-20 w-96 h-96 bg-cyber-accentglow rounded-full blur-[100px] pointer-events-none opacity-40"></div>
+  <div class="absolute bottom-0 left-0 -mb-20 -ml-20 w-80 h-80 bg-blue-500/20 rounded-full blur-[100px] pointer-events-none opacity-40"></div>
+
+  <div class="w-full max-w-md px-6 animate-slide-up relative z-10 w-full">
+    <div class="glass-card p-8 md:p-10">
+      
+      <div class="flex justify-center mb-8">
+        <img src="/static/assets/images/logo.png" alt="ReconX Logo" class="h-12 w-auto drop-shadow-lg object-contain" onerror="this.outerHTML='<i class=\\\'ph-fill ph-shield-check text-5xl text-cyber-accent\\\'></i>'" />
+      </div>
+
+      <div class="text-center mb-8">
+        <h1 class="text-2xl font-bold tracking-tight text-white mb-2">Welcome Back</h1>
+        <p class="text-sm text-cyber-textSecondary">Sign in to your command center</p>
+      </div>
+
+      <form id="loginForm" class="space-y-5">
+        <div>
+          <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2" for="email">Email Address</label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+              <i class="ph text-gray-500 text-lg ph-envelope"></i>
+            </div>
+            <input id="email" type="email" placeholder="agent@reconx.io" required class="form-input pl-11" />
+          </div>
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider" for="password">Security Key</label>
+            <a href="/forgot-password" class="text-xs font-medium text-cyber-accent hover:text-emerald-400 transition-colors">Forgot key?</a>
+          </div>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+              <i class="ph text-gray-500 text-lg ph-lock-key"></i>
+            </div>
+            <input id="password" type="password" placeholder="••••••••" required class="form-input pl-11" />
+          </div>
+        </div>
+
+        <button type="submit" class="w-full flex justify-center items-center gap-2 py-3.5 px-4 border border-transparent rounded-xl shadow-sm text-sm font-bold text-white bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 btn-glow mt-6">
+          Authenticate <i class="ph-bold ph-arrow-right"></i>
+        </button>
+      </form>
+
+      <div class="mt-8 text-center pt-6 border-t border-white/10">
+        <p class="text-sm text-gray-400">
+          Unregistered agent? 
+          <a href="/signup" class="font-medium text-cyber-accent hover:text-emerald-400 transition-colors hover:underline">Deploy an account</a>
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="/static/js/login.js"></script>
+</body>
+</html>

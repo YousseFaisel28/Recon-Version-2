@@ -1,0 +1,193 @@
+/* === PAGE BACKGROUND IMAGE === */
+body {
+  margin: 0;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  background-image: url('../assets/images/coreui_1200_600.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  filter: grayscale(100%);
+
+  font-family: "Inter", sans-serif;
+  position: relative;
+  overflow: hidden;
+}
+
+/* === REAL OVERLAY (dim + blur) === */
+.bg-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(4px);
+  z-index: 1;
+}
+
+/* === LOGIN CARD (Fixed — Not Transparent) === */
+.card {
+  position: relative;
+  z-index: 10;
+
+  width: 430px;
+  padding: 45px 40px;
+
+  background: rgba(25,25,25,0.82);   /* <── FIXED (solid glass) */
+  border-radius: 22px;
+
+  box-shadow:
+    0 10px 40px rgba(0,0,0,0.5),
+    inset 0 0 20px rgba(255,255,255,0.05);
+
+  text-align: center;
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(255,255,255,0.15);
+}
+
+/* === LOGO BOX === */
+.logo-box {
+  width: 110px;
+  height: 110px;
+  margin: 0 auto 25px;
+
+  background: rgba(255,255,255,0.08);
+  border-radius: 20px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  box-shadow:
+    0 0 15px rgba(255,255,255,0.25),
+    0 10px 20px rgba(255,255,255,0.15);
+}
+
+/* === LOGO (White Monochrome) === */
+.logo {
+  width: 75px;
+  filter: brightness(3) invert(1) grayscale(100%);
+  opacity: 0.9;
+}
+
+/* === TITLE === */
+.title {
+  font-size: 1.9rem;
+  color: white;
+  font-weight: 700;
+  margin-bottom: 30px;
+  text-shadow: 0 0 10px rgba(255,255,255,0.4);
+}
+
+/* === INPUTS === */
+.card input {
+  width: 100%;
+  padding: 14px 15px;
+  margin-bottom: 18px;
+
+  border-radius: 8px;
+  border: 1.5px solid rgba(255,255,255,0.45);
+
+  background: rgba(255,255,255,0.08);
+  color: white;
+  box-sizing: border-box;
+
+  font-size: 1rem;
+  outline: none;
+  transition: 0.25s ease;
+}
+
+.card input::placeholder {
+  color: #dcdcdc;
+}
+
+.card input:focus {
+  border-color: white;
+  box-shadow:
+    0 0 12px rgba(255,255,255,0.45),
+    inset 0 0 8px rgba(255,255,255,0.2);
+}
+
+/* PASSWORD WRAPPER ENHANCEMENT */
+.password-wrapper {
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.card .password-wrapper input {
+  padding-right: 48px;
+}
+
+.eye-toggle {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  color: #a0a0a0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+  box-shadow: none !important;
+  width: auto;
+  z-index: 2;
+  margin-top: -9px; /* adjust for bottom margin of input */
+}
+
+.eye-toggle:hover {
+  color: #fff;
+  background: none;
+  box-shadow: none !important;
+}
+
+/* === LOGIN BUTTON === */
+.card button[type="submit"] {
+  width: 100%;
+  padding: 14px;
+
+  border: none;
+  border-radius: 8px;
+
+  background: white;
+  color: black;
+
+  font-weight: 700;
+  font-size: 1.1rem;
+  cursor: pointer;
+
+  box-shadow:
+    0 0 12px rgba(255,255,255,0.5),
+    0 0 25px rgba(255,255,255,0.3);
+
+  transition: 0.25s;
+}
+
+.card button[type="submit"]:hover {
+  background: #e6e6e6;
+  box-shadow:
+    0 0 20px rgba(255,255,255,0.7),
+    0 0 35px rgba(255,255,255,0.5);
+}
+
+/* === FOOTER TEXT === */
+.foot-text {
+  margin-top: 20px;
+  font-size: 0.9rem;
+  color: #e4e4e4;
+}
+
+.foot-text a {
+  color: white;
+  text-decoration: underline;
+  font-weight: 600;
+}
+
+.foot-text a:hover {
+  opacity: 0.7;
+}

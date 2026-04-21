@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ReconX | Unauthorized Access</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'] },
+          colors: {
+            cyber: {
+              background: '#0B0F19',
+              card: 'rgba(255, 255, 255, 0.03)',
+              border: 'rgba(255, 255, 255, 0.08)',
+              accent: '#10B981',
+              accentGlow: 'rgba(16, 185, 129, 0.4)',
+              textPrimary: '#FFFFFF',
+              textSecondary: '#9CA3AF'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  
+  <style>
+    body { background: radial-gradient(circle at top right, #111827, #0B0F19 100%); color: #FFFFFF; min-height: 100vh; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5); border-radius: 24px; padding: 3rem; text-align: center; max-width: 500px; width: 90%; }
+    .glow-icon { filter: drop-shadow(0 0 15px rgba(239, 68, 68, 0.4)); }
+    .btn-return { background: linear-gradient(135deg, #10B981 0%, #059669 100%); transition: all 0.3s ease; box-shadow: 0 0 15px rgba(16, 185, 129, 0.2); }
+    .btn-return:hover { transform: translateY(-2px); box-shadow: 0 0 25px rgba(16, 185, 129, 0.4); }
+  </style>
+</head>
+<body>
+  
+  <div class="absolute top-0 right-0 -mt-24 -mr-24 w-96 h-96 bg-red-500/10 rounded-full blur-[100px] pointer-events-none"></div>
+  <div class="absolute bottom-0 left-0 -mb-24 -ml-24 w-80 h-80 bg-cyber-accentglow rounded-full blur-[100px] pointer-events-none"></div>
+
+  <div class="glass-card animate-slide-up relative z-10">
+    <div class="flex justify-center mb-8">
+      <div class="w-20 h-20 rounded-2xl bg-red-500/10 flex items-center justify-center border border-red-500/20 glow-icon">
+        <i class="ph-fill ph-prohibit text-4xl text-red-500"></i>
+      </div>
+    </div>
+
+    <h1 class="text-4xl font-bold tracking-tight text-white mb-4">403</h1>
+    <h2 class="text-2xl font-semibold text-white mb-3">Access Denied</h2>
+    <p class="text-cyber-textSecondary mb-8 leading-relaxed">
+      Your account does not have the necessary permissions to access this control node. 
+      Please contact a system administrator if you believe this is an error.
+    </p>
+
+    <div class="grid grid-cols-1 gap-4">
+      <a href="/home" class="btn-return px-6 py-3.5 rounded-xl font-bold text-white flex items-center justify-center gap-2">
+        <i class="ph-bold ph-arrow-left"></i> Return to Dashboard
+      </a>
+      <button onclick="logout()" class="px-6 py-3.5 rounded-xl border border-white/10 text-sm font-medium hover:bg-white/5 transition-colors">
+        Sign Out and Switch Account
+      </button>
+    </div>
+  </div>
+
+  <script src="/static/js/auth.js"></script>
+</body>
+</html>

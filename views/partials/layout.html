@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}ReconX{% endblock %}</title>
+  
+  <script>
+    // Early theme initialization to prevent flash
+    (function() {
+      const theme = localStorage.getItem('theme');
+      if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark', 'dark-mode');
+      } else {
+        document.documentElement.classList.remove('dark', 'dark-mode');
+      }
+    })();
+    
+    // 🛡️ FRONTEND SECURITY GUARD
+    const checkAuthStatus = async () => {
+      try {
+        const response = await fetch('/auth/status');
+        const data = await response.json();
+        
+        if (!data.logged_in) {
+          window.location.href = '/login';
+          return;
+        }
+
+        // Role-based protection for Admin routes
+        if (window.location.pathname.startsWith('/admin') && data.role !== 'admin') {
+          window.location.href = '/unauthorized';
+          return;
+        }
+
+        // Success: Show the UI
+        document.body.style.opacity = '1';
+        document.body.style.visibility = 'visible';
+        
+        // Populate global user data
+        if (document.getElementById('usernamDisplay')) {
+          document.getElementById('usernamDisplay').textContent = data.email.split('@')[0];
+        }
+      } catch (err) {
+        console.error("Auth Guard Error:", err);
+        // On network error, we stay hidden or redirect
+      }
+    };
+    
+    // Apply immediate lock before body renders
+    document.write('<style>body { opacity: 0; visibility: hidden; }</style>');
+    window.addEventListener('DOMContentLoaded', checkAuthStatus);
+  </script>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'] },
+          colors: {
+            cyber: {
+              background: '#0B0F19',
+              card: 'rgba(255, 255, 255, 0.03)',
+              border: 'rgba(255, 255, 255, 0.08)',
+              accent: '#10B981',
+              accentGlow: 'rgba(16, 185, 129, 0.4)',
+              secondary: '#1F2937',
+              textPrimary: '#FFFFFF',
+              textSecondary: '#9CA3AF'
+            }
+          },
+          animation: {
+            'fade-in': 'fadeIn 0.5s ease-out',
+            'slide-up': 'slideUp 0.6s ease-out',
+            'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            'pulse-fast': 'pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+          },
+          keyframes: {
+            fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+            slideUp: { '0%': { opacity: '0', transform: 'translateY(10px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } }
+          }
+        }
+      }
+    }
+  </script>
+  
+  <style>
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #0B0F19; }
+    ::-webkit-scrollbar-thumb { background: #1F2937; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #374151; }
+    
+    body { background-color: #f3f4f6; color: #111827; transition: background-color 0.3s, color 0.3s; }
+    .dark body { background: radial-gradient(circle at top right, #111827, #0B0F19 70%); color: #FFFFFF; }
+    
+    .glass-card { background: #ffffff; border: 1px solid #e5e7eb; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); border-radius: 16px; transition: all 0.3s ease; }
+    .glass-card:hover { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08); transform: translateY(-2px); }
+    .dark .glass-card { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5); }
+    .dark .glass-card:hover { border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 0 20px rgba(16, 185, 129, 0.1); }
+    
+    .sidebar-item-active { background: linear-gradient(90deg, rgba(16, 185, 129, 0.1) 0%, transparent 100%); border-left: 3px solid #10B981; color: #10B981; }
+    
+    .text-gradient { background: linear-gradient(135deg, #10B981 0%, #3B82F6 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; }
+    .btn-glow { box-shadow: 0 0 15px rgba(16, 185, 129, 0.4); transition: all 0.3s; }
+    .btn-glow:hover { box-shadow: 0 0 25px rgba(16, 185, 129, 0.6); transform: translateY(-1px); }
+    
+    .modal { display: none; align-items: center; justify-content: center; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); backdrop-filter: blur(5px); }
+    .modal.show { display: flex; }
+    .modal-content { background-color: #f9fafb; padding: 1.5rem; border-radius: 12px; width: 100%; max-width: 400px; border: 1px solid #e5e7eb; }
+    .dark .modal-content { background-color: #111827; border: 1px solid rgba(255,255,255,0.1); color: white; }
+    .modal-input { width: 100%; padding: 0.5rem 0.75rem; margin-top: 0.5rem; margin-bottom: 0.5rem; border-radius: 8px; border: 1px solid #d1d5db; background: white; color: #111827; }
+    .dark .modal-input { background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.2); color: white; }
+    .modal-btn { padding: 0.5rem 1rem; border-radius: 8px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+    .modal-btn-primary { background-color: #10B981; color: white; }
+    .modal-btn-primary:hover { background-color: #059669; }
+    .modal-btn-secondary { background-color: #e5e7eb; color: #374151; margin-right: 0.5rem; }
+    .dark .modal-btn-secondary { background-color: #374151; color: #e5e7eb; }
+    .dark .modal-btn-secondary:hover { background-color: #4b5563; }
+    
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; background-color: #10B981; box-shadow: 0 0 8px #10B981; animation: pulse 2s infinite; }
+    .status-dot.loading { background-color: #F59E0B; box-shadow: 0 0 8px #F59E0B; }
+    .status-dot.error { background-color: #EF4444; box-shadow: 0 0 8px #EF4444; }
+
+    /* Skeleton Loading */
+    .skeleton { background: linear-gradient(90deg, #e5e7eb 25%, #f3f4f6 50%, #e5e7eb 75%); background-size: 200% 100%; animation: skeleton-loading 1.5s infinite; border-radius: 4px; }
+    .dark .skeleton { background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 75%); background-size: 200% 100%; }
+    @keyframes skeleton-loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+    /* Custom Form & Table Styles for children */
+    .form-input { width: 100%; padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid #d1d5db; background: white; color: #111827; outline: none; }
+    .dark .form-input { background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: white; }
+    .form-input:focus { border-color: #10B981; }
+    .dark .form-input:focus { border-color: #10B981; box-shadow: 0 0 8px rgba(16, 185, 129, 0.2); }
+  </style>
+  {% block extra_head %}{% endblock %}
+</head>
+
+<body class="min-h-screen font-sans antialiased overflow-x-hidden flex">
+  
+  {% set active_page = active_page|default('home') %}
+
+  <!-- SIDEBAR -->
+  <aside class="w-64 border-r border-gray-200 dark:border-gray-800 bg-white/50 dark:bg-cyber-background/50 backdrop-blur-md flex-shrink-0 flex flex-col items-stretch z-10 hidden md:flex transition-colors duration-300">
+    <div class="h-16 flex items-center px-6 border-b border-gray-200 dark:border-gray-800">
+      <div class="flex items-center gap-2">
+        <img src="/static/assets/images/logo.png" alt="ReconX" class="h-8 w-auto rounded object-contain transform hover:scale-105 transition-transform" onerror="this.outerHTML='<i class=\\\'ph-fill ph-shield-check text-2xl text-cyber-accent\\\'></i>'" />
+        <span class="text-xl font-bold tracking-tight">ReconX</span>
+      </div>
+    </div>
+    
+    <div class="flex-1 py-6 px-4 space-y-2">
+      <p class="px-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Main</p>
+      <a href="/home" class="{% if active_page == 'home' %}sidebar-item-active{% else %}text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5{% endif %} flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all">
+        <i class="ph ph-squares-four text-lg"></i> Dashboard
+      </a>
+      <a href="/scan" class="{% if active_page == 'scan' %}sidebar-item-active{% else %}text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5{% endif %} flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all">
+        <i class="ph ph-scan text-lg"></i> Scan Targets
+      </a>
+      <a href="/history" class="{% if active_page == 'history' %}sidebar-item-active{% else %}text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5{% endif %} flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all">
+        <i class="ph ph-clock-counter-clockwise text-lg"></i> Scan History
+      </a>
+      <!-- Analytics anchor targets Dashboard -->
+      <a href="/home#analytics" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 transition-all">
+        <i class="ph ph-chart-line-up text-lg"></i> Analytics
+      </a>
+      <a href="/report" class="{% if active_page == 'report' %}sidebar-item-active{% else %}text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5{% endif %} flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all">
+        <i class="ph ph-file-text text-lg"></i> Reports
+      </a>
+      
+      <p class="px-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mt-6 mb-2">Intelligence</p>
+      <a href="/ai-assistant" class="{% if active_page == 'ai' %}sidebar-item-active{% else %}text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5{% endif %} flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all">
+        <i class="ph ph-robot text-lg text-purple-500"></i> AI Assistant
+      </a>
+    </div>
+    
+    <div class="p-4 border-t border-gray-200 dark:border-gray-800">
+      <div class="glass-card p-3 rounded-xl flex items-center gap-3 mb-2">
+        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-cyber-accent to-blue-500 flex items-center justify-center text-white font-bold text-sm">
+          <i class="ph ph-user"></i>
+        </div>
+        <div class="flex-1 overflow-hidden">
+          <p id="usernamDisplay" class="text-sm font-medium truncate">User</p>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Analyst</p>
+        </div>
+      </div>
+      
+      <div class="flex justify-between items-center px-1">
+        <button id="editInfoBtn" class="p-2 text-gray-500 dark:text-gray-400 hover:text-cyber-accent transition-colors" title="Account Settings">
+          <i class="ph ph-gear text-lg"></i>
+        </button>
+        <button id="darkModeToggle" class="p-2 text-gray-500 dark:text-gray-400 hover:text-cyber-accent transition-colors" title="Toggle Theme">
+          <i class="ph ph-moon text-lg dark:hidden"></i>
+          <i class="ph ph-sun text-lg hidden dark:block"></i>
+        </button>
+        <button onclick="logout()" class="p-2 text-gray-500 dark:text-gray-400 hover:text-red-500 transition-colors" title="Logout">
+          <i class="ph ph-sign-out text-lg"></i>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="flex-1 flex flex-col h-screen overflow-y-auto relative">
+    
+    <!-- TOP HEADER -->
+    <header class="h-16 flex items-center justify-between px-6 lg:px-10 border-b border-gray-200 dark:border-gray-800 bg-white/50 dark:bg-cyber-background/50 backdrop-blur-md sticky top-0 z-20 transition-colors duration-300">
+      <div class="flex items-center gap-4">
+        {% block header_title %}
+        <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-100 hidden sm:block">Command Center</h2>
+        {% endblock %}
+      </div>
+      
+      <div class="flex items-center gap-4 border border-gray-200 dark:border-gray-700 rounded-full px-3 py-1.5 glass-card">
+        <div id="system-status-dot" class="status-dot"></div>
+        <span id="system-status-text" class="text-xs font-medium text-gray-600 dark:text-gray-300">System Operational</span>
+      </div>
+    </header>
+
+    <div class="p-6 lg:p-10 max-w-7xl mx-auto w-full flex-grow flex flex-col space-y-8 animate-fade-in relative z-0">
+      {% block content %}{% endblock %}
+    </div>
+
+    <footer class="mt-auto border-t border-gray-200 dark:border-white/10 pt-8 pb-12 px-6 lg:px-10 max-w-7xl mx-auto w-full flex flex-col md:flex-row justify-between items-center text-sm text-gray-500 dark:text-gray-400 gap-4">
+      <p>© 2026 ReconX Intelligence. All Rights Reserved.</p>
+    </footer>
+  </main>
+
+  <!-- ACCOUNT MODALS -->
+  <div id="accountSettingsModal" class="modal">
+    <div class="modal-content">
+      <div class="flex justify-between items-center mb-4"><h2 class="text-xl font-bold">Account Settings</h2><button class="text-xl font-bold text-gray-500 hover:text-gray-800 dark:hover:text-white" id="closeAccountSettingsModal">&times;</button></div>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">Select what you would like to change</p>
+      <div class="space-y-3 mb-6">
+        <button id="changeUsernameOptionBtn" class="w-full flex items-center p-3 rounded-lg border border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"><div class="w-10 h-10 rounded-md bg-blue-100 dark:bg-blue-500/10 text-blue-600 flex items-center justify-center mr-3"><i class="ph ph-user"></i></div><div class="text-left"><p class="font-medium text-sm">Change Username</p></div></button>
+        <button id="changePasswordOptionBtn" class="w-full flex items-center p-3 rounded-lg border border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"><div class="w-10 h-10 rounded-md bg-purple-100 dark:bg-purple-500/10 text-purple-600 flex items-center justify-center mr-3"><i class="ph ph-key"></i></div><div class="text-left"><p class="font-medium text-sm">Change Password</p></div></button>
+      </div>
+      <div class="flex justify-end"><button id="accountSettingsCancelBtn" class="modal-btn modal-btn-secondary">Close</button></div>
+    </div>
+  </div>
+  <div id="verifyPasswordModal" class="modal">
+    <div class="modal-content">
+      <div class="flex justify-between items-center mb-4"><h2 class="text-xl font-bold">Security Verification</h2><button class="text-xl font-bold text-gray-500 hover:text-gray-800 dark:hover:text-white" id="closeVerifyPasswordModal">&times;</button></div>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Enter your current password to proceed with account settings</p>
+      <label class="block text-sm font-medium mb-1">Password</label><input type="password" id="verifyPasswordInput" class="modal-input" placeholder="Enter your password" />
+      <p id="verifyPasswordError" class="text-sm text-red-500 mt-1 hidden"></p>
+      <div class="flex justify-end mt-6"><button id="verifyPasswordCancelBtn" class="modal-btn modal-btn-secondary">Cancel</button><button id="verifyPasswordSubmitBtn" class="modal-btn modal-btn-primary">Verify</button></div>
+    </div>
+  </div>
+  <div id="changeUsernameModal" class="modal">
+    <div class="modal-content">
+      <div class="flex justify-between items-center mb-4"><h2 class="text-xl font-bold">Change Username</h2><button class="text-xl font-bold text-gray-500 hover:text-gray-800 dark:hover:text-white" id="closeModalBtn">&times;</button></div>
+      <label class="block text-sm font-medium mb-1">New Username</label><input type="text" id="newUsernameInput" class="modal-input" placeholder="Enter new username" />
+      <p id="usernameError" class="text-sm text-red-500 mt-1 hidden"></p><p id="usernameSuccess" class="text-sm text-green-500 mt-1 hidden"></p>
+      <div class="flex justify-end mt-6"><button id="changeUsernameCancelBtn" class="modal-btn modal-btn-secondary">Cancel</button><button id="changeUsernameSubmitBtn" class="modal-btn modal-btn-primary">Update Username</button></div>
+    </div>
+  </div>
+  <div id="changePasswordModal" class="modal">
+    <div class="modal-content">
+      <div class="flex justify-between items-center mb-4"><h2 class="text-xl font-bold">Change Password</h2><button class="text-xl font-bold text-gray-500 hover:text-gray-800 dark:hover:text-white" id="closeChangePasswordModal">&times;</button></div>
+      <label class="block text-sm font-medium mb-1">Current Password</label><input type="password" id="currentPasswordInput" class="modal-input" placeholder="Enter current password" />
+      <label class="block text-sm font-medium mb-1 mt-3">New Password</label><input type="password" id="newPasswordInput" class="modal-input" placeholder="Minimum 8 characters" />
+      <label class="block text-sm font-medium mb-1 mt-3">Confirm New Password</label><input type="password" id="confirmPasswordInput" class="modal-input" placeholder="Confirm new password" />
+      <p id="changePasswordError" class="text-sm text-red-500 mt-2 hidden"></p><p id="changePasswordSuccess" class="text-sm text-green-500 mt-2 hidden"></p>
+      <div class="flex justify-end mt-6"><button id="changePasswordCancelBtn" class="modal-btn modal-btn-secondary">Cancel</button><button id="changePasswordSubmitBtn" class="modal-btn modal-btn-primary">Update Password</button></div>
+    </div>
+  </div>
+
+  <script src="/static/js/counter.js"></script>
+  <script src="/static/js/change_username.js"></script>
+  <script src="/static/js/darkmode.js"></script>
+  <script src="/static/js/auth.js"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

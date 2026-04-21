@@ -1,0 +1,125 @@
+/* --------------------------------------------
+   LIGHT MODE (DEFAULT)
+--------------------------------------------- */
+:root {
+    --bg-color: #ffffff;
+    --text-color: #111111;
+    --card-bg: #f5f5f5;
+    --border-color: #dddddd;
+    --link-color: #0066ff;
+}
+
+/* --------------------------------------------
+   DARK MODE
+--------------------------------------------- */
+.dark-mode {
+    --bg-color: #0d1117;
+    --text-color: #e6edf3;
+    --card-bg: #161b22;
+    --border-color: #30363d;
+    --link-color: #58a6ff;
+}
+
+/* Apply the theme variables */
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    transition: all 0.25s ease;
+}
+
+/* Cards, boxes, containers */
+.card, .box, .container, .panel {
+    background-color: var(--card-bg) !important;
+    border: 1px solid var(--border-color) !important;
+    color: var(--text-color) !important;
+    transition: all 0.25s ease;
+}
+
+/* Links */
+a {
+    color: var(--link-color);
+}
+
+a:hover {
+    opacity: 0.8;
+}
+
+
+button, input[type=submit], .btn {
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+button:hover, .btn:hover {
+    opacity: 0.8;
+}
+
+input, select, textarea {
+    background: var(--card-bg);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    padding: 6px 10px;
+    border-radius: 6px;
+}
+
+input::placeholder, textarea::placeholder {
+    color: #888;
+}
+
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    color: var(--text-color);
+}
+
+table th, table td {
+    border: 1px solid var(--border-color);
+    padding: 10px;
+}
+
+table tr:nth-child(even) {
+    background: var(--card-bg);
+}
+
+
+nav, .navbar {
+    background-color: var(--card-bg);
+    border-bottom: 1px solid var(--border-color);
+    padding: 10px 20px;
+    color: var(--text-color);
+}
+
+
+.modal, .popup {
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+}
+
+
+
+
+/* Dark Mode Toggle Button */
+#darkModeToggle {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: var(--card-bg);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    padding: 8px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    z-index: 9999;
+    transition: all 0.25s ease;
+}
+
+#darkModeToggle:hover {
+    opacity: 0.8;
+}

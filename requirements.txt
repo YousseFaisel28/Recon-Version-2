@@ -1,0 +1,17 @@
+flask
+flask-cors
+pymongo
+scikit-learn
+numpy
+requests
+sublist3r
+python-nmap
+whatweb
+pandas
+urllib3
+scapy
+beautifulsoup4
+pdfkit
+python-dotenv
+google-generativeai
+Flask-Limiter

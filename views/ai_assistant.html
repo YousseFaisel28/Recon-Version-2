@@ -1,0 +1,121 @@
+{% extends 'partials/layout.html' %}
+{% set active_page = 'ai' %}
+
+{% block title %}ReconX | AI Assistant{% endblock %}
+
+{% block header_title %}
+<h2 class="text-lg font-semibold text-gray-800 dark:text-gray-100 hidden sm:block">AI Security Analyst</h2>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto w-full flex flex-col h-[calc(100vh-12rem)] animate-slide-up">
+  <div class="glass-card flex flex-col h-full overflow-hidden">
+    <!-- Header -->
+    <div class="p-6 border-b border-gray-200 dark:border-white/5 bg-gray-50/50 dark:bg-white/5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div>
+        <h1 class="text-xl font-bold flex items-center gap-2">
+          <i class="ph-fill ph-robot text-purple-500 text-2xl"></i> Support Intelligence
+        </h1>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Select a scan and ask context-aware questions about vulnerabilities and exploits.</p>
+      </div>
+      
+      <div class="w-full md:w-64">
+        <select id="scan-select" class="form-input text-sm">
+          <option value="">-- Binding target list... --</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Chat Interface -->
+    <div id="chat-section" class="hidden flex-col h-full overflow-hidden">
+      <!-- Target banner -->
+      <div class="px-6 py-2 bg-purple-500/10 border-b border-purple-500/20 text-xs font-semibold text-purple-600 dark:text-purple-400 flex items-center justify-between">
+        <span class="flex items-center gap-2"><i class="ph-bold ph-crosshair"></i> Target Lock: <span id="selected-domain" class="text-gray-800 dark:text-white">None</span></span>
+      </div>
+
+      <!-- Quick Prompts -->
+      <div class="p-4 border-b border-gray-200 dark:border-white/5 flex gap-2 overflow-x-auto hide-scrollbar whitespace-nowrap">
+        <button onclick="askAI('summarize')" class="px-4 py-2 rounded-lg text-xs font-medium bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 transition-colors border border-transparent dark:border-white/5 text-gray-700 dark:text-gray-300">📋 Summarize report</button>
+        <button onclick="askAI('score')" class="px-4 py-2 rounded-lg text-xs font-medium bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 transition-colors border border-transparent dark:border-white/5 text-gray-700 dark:text-gray-300">🛡️ Rate website security</button>
+        <button onclick="askAI('prioritize')" class="px-4 py-2 rounded-lg text-xs font-medium bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 transition-colors border border-transparent dark:border-white/5 text-gray-700 dark:text-gray-300">🚀 Priority fixes</button>
+        <button onclick="askAI('biggest_risk')" class="px-4 py-2 rounded-lg text-xs font-medium bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 transition-colors border border-transparent dark:border-white/5 text-gray-700 dark:text-gray-300">⚠️ Detail biggest risk</button>
+      </div>
+
+      <!-- Chat History -->
+      <div id="chat-window" class="flex-1 overflow-y-auto p-6 space-y-6 bg-white/30 dark:bg-black/20">
+        <div class="flex items-start gap-4">
+          <div class="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white flex-shrink-0">
+            <i class="ph-bold ph-robot"></i>
+          </div>
+          <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700/50 rounded-2xl rounded-tl-none p-4 text-sm max-w-[85%] shadow-sm dark:text-gray-200">
+            Hello! I am your ReconX AI Security Assistant. Select a scan above and ask me anything about the results.
+          </div>
+        </div>
+      </div>
+
+      <!-- Input Area -->
+      <div class="p-4 bg-gray-50 dark:bg-white/5 border-t border-gray-200 dark:border-white/10">
+        <div class="relative flex items-center">
+          <input type="text" id="user-input" class="w-full form-input pl-4 pr-12 py-3 rounded-full text-sm !bg-white dark:!bg-[#111827] drop-shadow-sm" placeholder="Ask about vulnerabilities (e.g., 'What affects PHP?')..." onkeypress="handleKey(event)">
+          <button id="send-btn" onclick="askCustom()" class="absolute right-2 w-10 h-10 rounded-full bg-purple-500 hover:bg-purple-600 flex items-center justify-center text-white transition-colors btn-glow">
+            <i class="ph-bold ph-paper-plane-right"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div id="ai-empty-state" class="flex-1 flex flex-col items-center justify-center p-12 text-center text-gray-500 dark:text-gray-400">
+      <div class="w-24 h-24 rounded-full bg-purple-500/10 flex items-center justify-center text-purple-500/50 text-6xl mb-6">
+        <i class="ph-fill ph-robot"></i>
+      </div>
+      <h3 class="text-xl font-bold text-gray-700 dark:text-gray-300 mb-2">Awaiting Telemetry</h3>
+      <p class="max-w-xs">Select a completed scan from the dropdown above to initialize neural analysis context.</p>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_head %}
+<!-- Allow AI specific CSS overrides if needed by external JS payload parsing -->
+<style>
+ .user-message { justify-content: flex-end; display: flex; }
+ .user-message .msg-bubble { background: #10B981; color: white; border-radius: 16px 16px 0 16px; padding: 1rem; font-size: 0.875rem; max-width: 85%; }
+ .ai-message { display: flex; gap: 1rem; }
+ .ai-message .msg-bubble { background: white; border: 1px solid #e5e7eb; border-radius: 0 16px 16px 16px; padding: 1rem; font-size: 0.875rem; max-width: 85%; }
+ .dark .ai-message .msg-bubble { background: #1F2937; border-color: rgba(255,255,255,0.1); color: #E5E7EB; }
+ 
+ /* Markdown rendering styles within chat bubble */
+ .ai-markdown-content ul { list-style-type: disc; margin-left: 1.5rem; margin-top: 0.5rem; margin-bottom: 0.5rem; }
+ .ai-markdown-content ol { list-style-type: decimal; margin-left: 1.5rem; margin-top: 0.5rem; margin-bottom: 0.5rem; }
+ .ai-markdown-content li { margin-bottom: 0.25rem; }
+ .ai-markdown-content p { margin-bottom: 0.75rem; }
+ .ai-markdown-content p:last-child { margin-bottom: 0; }
+ .ai-markdown-content strong { font-weight: 700; color: inherit; }
+ .ai-markdown-content h1, .ai-markdown-content h2, .ai-markdown-content h3 { font-weight: 600; margin-top: 1rem; margin-bottom: 0.5rem; }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/ai_assistant.js"></script>
+<script>
+  const scanSelect = document.getElementById('scan-select');
+  if(scanSelect) {
+    scanSelect.addEventListener('change', (e) => {
+      const chatSection = document.getElementById('chat-section');
+      const emptyState = document.getElementById('ai-empty-state');
+      if(e.target.value) {
+        chatSection.classList.remove('hidden');
+        chatSection.classList.add('flex');
+        if(emptyState) emptyState.classList.add('hidden');
+      } else {
+        chatSection.classList.add('hidden');
+        chatSection.classList.remove('flex');
+        if(emptyState) emptyState.classList.remove('hidden');
+      }
+    });
+  }
+</script>
+{% endblock %}

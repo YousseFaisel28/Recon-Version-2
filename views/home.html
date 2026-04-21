@@ -1,0 +1,198 @@
+{% extends 'partials/layout.html' %}
+{% set active_page = 'home' %}
+
+{% block title %}ReconX | Dashboard{% endblock %}
+
+{% block header_title %}
+<h2 class="text-lg font-semibold text-gray-800 dark:text-gray-100 hidden sm:block">Command Center</h2>
+{% endblock %}
+
+{% block content %}
+<!-- HERO SECTION -->
+<section class="relative rounded-3xl overflow-hidden glass-card p-8 lg:p-10 border border-gray-200 dark:border-white/10">
+  <div class="absolute top-0 right-0 -mt-20 -mr-20 w-80 h-80 bg-cyber-accent/20 rounded-full blur-3xl pointer-events-none"></div>
+  <div class="absolute bottom-0 left-0 w-60 h-60 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
+  
+  <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+    <div class="max-w-2xl">
+      <h1 class="font-bold tracking-tight mb-4 flex flex-col gap-1">
+        <span class="text-base md:text-xl font-medium text-gray-500 dark:text-gray-400 animate-fade-in"></span>
+        <span id="hero-greeting" class="text-3xl md:text-5xl animate-slide-up" style="animation-delay: 0.1s;"><span class="text-gradient">Loading...</span></span>
+      </h1>
+      <p class="text-gray-600 dark:text-cyber-textSecondary text-base md:text-lg mb-8 max-w-xl leading-relaxed animate-fade-in" style="animation-delay: 0.2s;">
+        Your cybersecurity command center is ready. Monitor threats, analyze vulnerabilities, and take action.
+      </p>
+      <div class="flex items-center gap-4 animate-slide-up" style="animation-delay: 0.3s;">
+        <a href="scan.html" class="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold text-sm shadow-[0_0_15px_rgba(16,185,129,0.3)] hover:shadow-[0_0_25px_rgba(16,185,129,0.6)] hover:-translate-y-1 transition-all duration-300">
+          <i class="ph-bold ph-radar"></i> Initialize Scan
+        </a>
+        <a href="../views/ai_assistant.html" class="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 font-semibold text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/10 hover:shadow-[0_0_15px_rgba(255,255,255,0.05)] hover:-translate-y-1 transition-all duration-300">
+          <i class="ph-bold ph-sparkle text-purple-500"></i> Ask AI
+        </a>
+      </div>
+    </div>
+    
+    <div class="hidden md:flex justify-center flex-shrink-0">
+      <div class="relative w-48 h-48">
+        <div class="absolute inset-0 border-2 border-dashed border-cyber-accent/50 rounded-full animate-spin" style="animation-duration: 20s;"></div>
+        <div class="absolute inset-4 border border-blue-500/30 rounded-full animate-spin" style="animation-duration: 15s; animation-direction: reverse;"></div>
+        <div class="absolute inset-0 flex items-center justify-center text-6xl text-cyber-accent drop-shadow-[0_0_15px_rgba(16,185,129,0.5)]">
+          <i class="ph-fill ph-shield-check"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ANALYTICS CARDS -->
+<section id="analytics" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 animate-slide-up" style="animation-delay: 0.1s; animation-fill-mode: both;">
+  <div class="glass-card p-5 flex flex-col justify-between group">
+    <div class="flex items-start justify-between mb-4">
+      <div class="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-500/10 flex items-center justify-center text-blue-600 text-xl group-hover:scale-110 transition-transform">
+        <i class="ph-fill ph-scan"></i>
+      </div>
+    </div>
+    <div>
+      <h3 class="text-gray-500 dark:text-cyber-textSecondary text-sm font-medium mb-1">Scans Completed</h3>
+      <p id="scans" class="text-3xl font-bold skeleton w-16 h-9"></p>
+    </div>
+  </div>
+
+  <div class="glass-card p-5 flex flex-col justify-between group">
+    <div class="flex items-start justify-between mb-4">
+      <div class="w-10 h-10 rounded-lg bg-emerald-100 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-600 text-xl group-hover:scale-110 transition-transform">
+        <i class="ph-fill ph-crosshair"></i>
+      </div>
+    </div>
+    <div>
+      <h3 class="text-gray-500 dark:text-cyber-textSecondary text-sm font-medium mb-1">Targets Scanned</h3>
+      <p id="visitors" class="text-3xl font-bold skeleton w-16 h-9"></p>
+    </div>
+  </div>
+
+  <div class="glass-card p-5 flex flex-col justify-between group">
+    <div class="flex items-start justify-between mb-4">
+      <div class="w-10 h-10 rounded-lg bg-red-100 dark:bg-red-500/10 flex items-center justify-center text-red-600 text-xl group-hover:scale-110 transition-transform">
+        <i class="ph-fill ph-bug"></i>
+      </div>
+    </div>
+    <div>
+      <h3 class="text-gray-500 dark:text-cyber-textSecondary text-sm font-medium mb-1">Total Vulnerabilities</h3>
+      <p id="vulnerabilities-count" class="text-3xl font-bold skeleton w-16 h-9"></p>
+    </div>
+  </div>
+  
+  <div class="glass-card p-5 flex flex-col justify-between group">
+    <div class="flex items-start justify-between mb-4">
+      <div class="w-10 h-10 rounded-lg bg-orange-100 dark:bg-orange-500/10 flex items-center justify-center text-orange-600 text-xl group-hover:scale-110 transition-transform">
+        <i class="ph-fill ph-warning-circle"></i>
+      </div>
+    </div>
+    <div>
+      <h3 class="text-gray-500 dark:text-cyber-textSecondary text-sm font-medium mb-1">Avg Risk Score</h3>
+      <p id="rating" class="text-3xl font-bold skeleton w-16 h-9"></p>
+    </div>
+  </div>
+</section>
+
+<!-- CHARTS SECTION -->
+<section class="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-slide-up" style="animation-delay: 0.2s; animation-fill-mode: both;">
+  <div class="glass-card p-6 lg:col-span-2 flex flex-col relative">
+    <div class="flex items-center justify-between mb-6">
+      <h3 class="text-lg font-semibold cursor-default">Scan Activity Over Time</h3>
+    </div>
+    <div class="relative flex-1 w-full min-h-[250px] max-h-[300px]">
+      <div id="activityChart-skeleton" class="absolute inset-0 skeleton rounded-xl"></div>
+      <canvas id="activityChart" class="hidden"></canvas>
+    </div>
+  </div>
+
+  <div class="glass-card p-6 flex flex-col relative">
+    <h3 class="text-lg font-semibold mb-6 cursor-default">Risk Composition</h3>
+    <div class="relative flex-1 w-full flex items-center justify-center min-h-[250px]">
+      <div id="riskChart-skeleton" class="absolute inset-0 skeleton rounded-full max-h-[200px] max-w-[200px] m-auto"></div>
+      <canvas id="riskChart" class="hidden"></canvas>
+      <div id="riskChart-overlay" class="absolute inset-0 items-center justify-center pointer-events-none flex-col hidden">
+        <span id="risk-total" class="text-3xl font-bold text-gray-800 dark:text-white mt-4">0</span>
+        <span class="text-xs text-gray-500">Total</span>
+      </div>
+    </div>
+    <div class="mt-4 grid grid-cols-2 gap-2 text-sm">
+      <div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-red-500"></div> Critical (<span id="legend-critical">0</span>)</div>
+      <div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-orange-500"></div> High (<span id="legend-high">0</span>)</div>
+      <div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-yellow-500"></div> Medium (<span id="legend-medium">0</span>)</div>
+      <div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-green-500"></div> Low (<span id="legend-low">0</span>)</div>
+    </div>
+  </div>
+</section>
+
+<!-- RECENT SCANS TABLE -->
+<section class="glass-card overflow-hidden animate-slide-up" style="animation-delay: 0.3s; animation-fill-mode: both;">
+  <div class="p-6 border-b border-gray-200 dark:border-white/5 flex justify-between items-center">
+    <h3 class="text-lg font-semibold cursor-default">Recent Operations</h3>
+    <a href="history.html" class="text-sm font-medium text-cyber-accent hover:underline">View All</a>
+  </div>
+  <div class="overflow-x-auto relative min-h-[150px]">
+    <table class="w-full text-left border-collapse">
+      <thead>
+        <tr class="bg-gray-50 dark:bg-white/5 text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400">
+          <th class="px-6 py-3 font-medium">Target</th>
+          <th class="px-6 py-3 font-medium">Status</th>
+          <th class="px-6 py-3 font-medium">Max Risk Level</th>
+          <th class="px-6 py-3 font-medium">Date Completed</th>
+          <th class="px-6 py-3 font-medium text-right">Action</th>
+        </tr>
+      </thead>
+      <tbody id="recent-scans-body" class="divide-y divide-gray-200 dark:divide-white/5">
+        <!-- Rendered via JS -->
+      </tbody>
+    </table>
+    <div id="recent-scans-loader" class="absolute inset-0 flex justify-center items-center bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm z-10">
+       <i class="ph ph-spinner-gap text-3xl text-cyber-accent animate-spin"></i>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/dashboard_data.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", async () => {
+    const greetingEl = document.getElementById("hero-greeting");
+    let name = "";
+    
+    try {
+      // First try the local session element from the sidebar
+      const sidebarName = document.getElementById("usernamDisplay");
+      if (sidebarName && sidebarName.textContent && sidebarName.textContent.trim() !== "User") {
+          name = sidebarName.textContent.trim();
+      }
+
+      // Fallback/Upgrade to HTTP fetch if local yields default
+      if (!name) {
+          const resp = await fetch("/user/profile");
+          if(resp.ok) {
+            const data = await resp.json();
+            if (data.username && data.username.trim() !== "") {
+                name = data.username.trim();
+            }
+          }
+      }
+    } catch(e) { console.error("Failed to fetch user profile for greeting:", e); }
+
+    const hour = new Date().getHours();
+    let timeGreeting = "Good evening";
+    
+    if (hour >= 5 && hour < 12) {
+      timeGreeting = "Good morning";
+    } else if (hour >= 12 && hour < 18) {
+      timeGreeting = "Good afternoon";
+    }
+    
+    // Check local storage or final fallbacks
+    if (!name) name = "Analyst";
+
+    greetingEl.innerHTML = `<span class="text-gradient">${timeGreeting}, ${name}</span>`;
+  });
+</script>
+{% endblock %}

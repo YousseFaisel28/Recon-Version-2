@@ -1,0 +1,176 @@
+
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <style>
+            body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #1e293b; background: #ffffff; margin: 0; padding: 0; line-height: 1.5; font-size: 10pt; }
+            .clearfix:after { content: ""; display: table; clear: both; }
+            .page-break { page-break-after: always; }
+            
+            /* Cover Page */
+            .cover { height: 950pt; background: #111827; color: white; text-align: center; padding-top: 150pt; box-sizing: border-box; border-left: 20pt solid #3b82f6; }
+            .cover h1 { font-size: 40pt; font-weight: 800; margin: 0; letter-spacing: -1pt; }
+            .cover p { font-size: 14pt; color: #3b82f6; text-transform: uppercase; letter-spacing: 4pt; font-weight: 600; margin-top: 15pt; }
+            .cover-meta { margin-top: 350pt; font-size: 11pt; color: #9ca3af; }
+            .cover-meta b { color: white; display: block; font-size: 13pt; margin-top: 5pt; margin-bottom: 20pt; }
+
+            /* Header Section */
+            .report-header { background: #111827; color: white; padding: 25pt 40pt; box-sizing: border-box; border-left: 10pt solid #3b82f6; }
+            .report-header h2 { margin: 0; font-size: 18pt; }
+            .report-header p { margin: 3pt 0 0 0; color: #3b82f6; font-size: 9pt; font-weight: 700; text-transform: uppercase; }
+
+            /* Dashboard */
+            .dashboard { padding: 30pt 40pt; background: #f9fafb; border-bottom: 1px solid #e5e7eb; }
+            .card-wrapper { width: 23%; float: left; margin-right: 2%; box-sizing: border-box; }
+            .card-wrapper:last-child { margin-right: 0; }
+            .metric-card { background: white; padding: 15pt 10pt; border-radius: 8pt; border: 1px solid #e5e7eb; text-align: center; }
+            .metric-card .val { font-size: 22pt; font-weight: 800; display: block; color: #111827; }
+            .metric-card .lbl { font-size: 7pt; color: #6b7280; text-transform: uppercase; font-weight: 700; margin-top: 4pt; display: block; }
+            .acc-red { border-top: 3pt solid #ef4444; }
+            .acc-blue { border-top: 3pt solid #3b82f6; }
+
+            /* Content Sections */
+            .container { padding: 40pt; }
+            .section-title { font-size: 18pt; font-weight: 800; color: #111827; margin-bottom: 20pt; border-bottom: 2pt solid #3b82f6; display: inline-block; padding-bottom: 4pt; }
+            
+            /* Tables */
+            table { width: 100%; border-collapse: collapse; margin-bottom: 20pt; font-size: 9pt; }
+            th { text-align: left; background: #f3f4f6; padding: 8pt 12pt; color: #4b5563; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #e5e7eb; }
+            td { padding: 8pt 12pt; border-bottom: 1px solid #f3f4f6; vertical-align: top; }
+            
+            /* Badges */
+            .badge { padding: 2pt 6pt; border-radius: 4pt; font-size: 8pt; font-weight: 700; color: white; display: inline-block; }
+            .bg-red { background: #ef4444; }
+            .bg-orange { background: #f97316; }
+            .bg-yellow { background: #eab308; }
+            .bg-green { background: #10b981; }
+            .bg-blue { background: #3b82f6; }
+
+            /* Cards */
+            .glass-card { background: #ffffff; border: 1px solid #e5e7eb; border-radius: 10pt; padding: 15pt; margin-bottom: 20pt; page-break-inside: avoid; }
+            .card-title { font-size: 11pt; font-weight: 700; color: #111827; margin-bottom: 10pt; display: block; }
+            
+            /* Cluster Items */
+            .cluster-item { padding: 6pt 0; border-bottom: 1px dashed #f3f4f6; }
+            .cluster-item:last-child { border-bottom: 0; }
+            
+            /* Anomaly Cards */
+            .anomaly-grid { width: 32%; float: left; margin-right: 1.33%; box-sizing: border-box; }
+            .anomaly-grid:last-child { margin-right: 0; }
+
+            /* Attack Path Section */
+            .path-step { background: #f8fafc; border: 1px solid #e2e8f0; padding: 10pt 15pt; border-radius: 6pt; display: inline-block; font-weight: 700; font-size: 9pt; margin-right: 10pt; }
+            .path-arrow { color: #3b82f6; font-weight: bold; margin-right: 10pt; }
+
+            @page { margin: 0; }
+        </style>
+    </head>
+    <body>
+        <div class="cover">
+            <h1>THREAT INTELLIGENCE</h1>
+            <p>Integrated Vulnerability Audit</p>
+            <div class="cover-meta">
+                TARGET DOMAIN<b>crash-test.com</b>
+                REPORT GENERATED<b>April 06, 2026</b>
+                AUDIT IDENTIFIER<b>RX-TEST-CRASH-R</b>
+            </div>
+        </div>
+
+        <div class="report-header">
+            <h2>Executive Overview</h2>
+            <p>Unified Assessment Dashboard</p>
+        </div>
+
+        <div class="dashboard clearfix">
+            <div class="card-wrapper"><div class="metric-card"><span class="val">0</span><span class="lbl">Subdomains</span></div></div>
+            <div class="card-wrapper"><div class="metric-card"><span class="val">0</span><span class="lbl">Verifiable Vulns</span></div></div>
+            <div class="card-wrapper"><div class="metric-card acc-red"><span class="val">0</span><span class="lbl">Critical Risks</span></div></div>
+            <div class="card-wrapper"><div class="metric-card acc-blue"><span class="val">0.0%</span><span class="lbl">Global Risk Score</span></div></div>
+        </div>
+
+        <div class="container" style="padding-bottom: 0;">
+            <h3 class="section-title">Network Topology Clusters</h3>
+            <p style="margin-bottom: 20pt; color: #6b7280;">Logical grouping of assets based on shared infrastructure and service patterns.</p>
+            
+            <div class="clearfix">
+                
+                <div style="width: 48%; float: left; margin-right: 2%; margin-bottom: 20pt;">
+                    <div class="glass-card" style="margin-bottom: 0;">
+                        <span class="card-title">Cluster 1 (0 Nodes)</span>
+                        <div style="max-height: 200pt; overflow: hidden;">
+                            
+                        </div>
+                    </div>
+                </div>
+                
+                
+            </div>
+        </div>
+
+        <div class="page-break"></div>
+
+        <div class="container" style="padding-top: 20pt; padding-bottom: 0;">
+            <h3 class="section-title">Technology Fingerprinting</h3>
+            
+            <div class="glass-card">
+                <span class="card-title" style="color: #3b82f6;">http://broken.test</span>
+                <table>
+                    <thead>
+                        <tr><th>Technology</th><th>Version</th><th>Vulnerabilities</th></tr>
+                    </thead>
+                    <tbody>
+                        
+                    </tbody>
+                </table>
+            </div>
+            
+        </div>
+
+        <div class="page-break"></div>
+
+        <div class="container" style="padding-top: 20pt; padding-bottom: 0;">
+            <h3 class="section-title">Traffic Anomaly Analysis</h3>
+            <div class="clearfix">
+                
+                <div class="anomaly-grid">
+                    <div class="glass-card" style="border-left: 4pt solid #10b981;">
+                        <span class="card-title" style="font-size: 9pt;">broken.test</span>
+                        <div style="font-size: 8pt; color: #6b7280;">
+                            Status: <b style="color: #10b981;">UNKNOWN</b><br>
+                            Unique IPs: <b></b><br>
+                            SYN Count: <b></b>
+                        </div>
+                    </div>
+                </div>
+                
+                
+            </div>
+        </div>
+
+        <div class="container" style="padding-top: 20pt;">
+            <h3 class="section-title">Exploitation Intelligence</h3>
+            
+        </div>
+
+        <div class="page-break"></div>
+
+        <div class="container" style="padding-top: 20pt;">
+            <h3 class="section-title">Verifiable Vulnerability Index</h3>
+            <table>
+                <thead>
+                    <tr><th>CVE ID</th><th>Service/URL</th><th>Port</th><th>CVSS</th><th>Risk</th></tr>
+                </thead>
+                <tbody>
+                    
+                </tbody>
+            </table>
+        </div>
+
+        <div class="container" style="padding-top: 0;">
+            <h3 class="section-title">Actionable Remediation Roadmap</h3>
+            
+        </div>
+    </body>
+    </html>
+    

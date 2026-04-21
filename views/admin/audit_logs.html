@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Audit Logs | Admin Dashboard</title>
+  <link rel="stylesheet" href="/static/css/adminpages.css">
+</head>
+<body>
+
+  <!-- BACKGROUND -->
+  <div class="bg-image"></div>
+  <div class="overlay"></div>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+      <div class="sidebar-logo">
+          <h2>ReconX</h2>
+      </div>
+
+    <a href="/admin" class="sidebar-item">Dashboard</a>
+    <a href="/admin/user-edit" class="sidebar-item">User Editing</a>
+    <a href="/admin/audit-logs" class="sidebar-item active">Audit Logs</a>
+    <a href="/admin/pending-users" class="sidebar-item">Pending Users</a>
+    <a href="/login" class="sidebar-item logout">Logout</a>
+
+  </div>
+
+  <!-- MAIN PAGE CONTENT -->
+  <div class="content-table">
+
+      <!-- FILTER BAR -->
+      <div class="audit-filter-bar">
+        <h2 class="audit-title">Audit Logs</h2>
+        <div class="audit-filters">
+          <input type="text" id="filterUser" placeholder="User" class="audit-input" />
+          <input type="text" id="filterDomain" placeholder="Domain" class="audit-input" />
+          <select id="filterAction" class="audit-select">
+            <option value="">All Actions</option>
+          </select>
+          <input type="text" id="filterIP" placeholder="IP Address" class="audit-input" />
+          <input type="date" id="filterDateFrom" class="audit-input" title="From date" />
+          <input type="date" id="filterDateTo" class="audit-input" title="To date" />
+          <button id="btnApplyFilters" class="audit-btn filter-btn">Search</button>
+          <button id="btnClearFilters" class="audit-btn clear-btn">Clear</button>
+        </div>
+      </div>
+
+      <!-- RESULTS TABLE -->
+      <div class="table-container audit-table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>User</th>
+              <th>Action</th>
+              <th>Domain</th>
+              <th>IP Address</th>
+              <th>User-Agent</th>
+              <th>Timestamp</th>
+              <th>Integrity</th>
+            </tr>
+          </thead>
+          <tbody id="auditLogsTableBody"></tbody>
+        </table>
+
+        <!-- PAGINATION -->
+        <div class="audit-pagination" id="auditPagination"></div>
+      </div>
+
+  </div>
+
+  <script src="/static/js/audit_logs.js"></script>
+
+</body>
+</html>

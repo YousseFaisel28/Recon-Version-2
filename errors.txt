@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "D:\Recon-X\app.py", line 74, in <module>
+    from controllers.report_controller import report_bp
+  File "D:\Recon-X\controllers\report_controller.py", line 381, in <module>
+    from utils.report_generator import generate_html_report, generate_pdf_report
+  File "D:\Recon-X\utils\report_generator.py", line 2, in <module>
+    import pdfkit
+ModuleNotFoundError: No module named 'pdfkit'

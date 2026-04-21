@@ -1,0 +1,99 @@
+{% extends 'partials/layout.html' %}
+{% set active_page = 'report' %}
+
+{% block title %}ReconX | Intelligence Report{% endblock %}
+
+{% block header_title %}
+<h2 class="text-lg font-semibold text-gray-800 dark:text-gray-100 hidden sm:block">Target Report</h2>
+{% endblock %}
+
+{% block content %}
+<div class="w-full animate-slide-up space-y-6">
+  <!-- Header Card -->
+  <div class="glass-card p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 bg-gradient-to-br from-gray-900/50 to-emerald-900/10 shadow-[0_0_20px_rgba(16,185,129,0.15)] relative overflow-hidden">
+    <!-- Subtle glow accent line -->
+    <div class="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-emerald-400 to-cyan-500 shadow-[0_0_10px_rgba(52,211,153,0.8)]"></div>
+    
+    <div class="relative z-10">
+      <h1 class="text-2xl md:text-3xl font-bold tracking-tight mb-2 text-white">Vulnerability Assessment</h1>
+      <p id="domain-title" class="text-sm font-mono bg-emerald-500/10 text-emerald-400 inline-block px-3 py-1.5 rounded-md border border-emerald-500/20 shadow-inner">Loading Target...</p>
+    </div>
+    
+    <div class="flex items-center gap-3 relative z-10">
+      <button id="patch-btn" class="flex flex-1 md:flex-none items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-white/5 hover:bg-white/10 transition-colors text-sm font-semibold border border-white/10 text-gray-200">
+        <i class="ph-bold ph-shield-check text-emerald-400 text-lg"></i> Security Patches
+      </button>
+      <button id="download-btn" class="flex flex-1 md:flex-none items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-semibold text-sm shadow-[0_0_15px_rgba(16,185,129,0.3)] hover:shadow-[0_0_25px_rgba(16,185,129,0.5)] hover:-translate-y-0.5 transition-all focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 dark:focus:ring-offset-gray-900">
+        <i class="ph-bold ph-download-simple text-lg"></i> Export PDF
+      </button>
+    </div>
+  </div>
+
+  <!-- Report Content Container -->
+  <div id="report-content" class="w-full">
+    <div class="glass-card p-8 flex flex-col justify-center items-center h-[300px]">
+       <i class="ph ph-spinner-gap text-4xl text-emerald-500 animate-spin mb-4 drop-shadow-[0_0_8px_rgba(16,185,129,0.5)]"></i>
+       <p class="text-gray-400 font-medium">Decrypting intelligence report...</p>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_head %}
+<!-- Styles specific to the JS injected components inside #report-content -->
+<style>
+    /* Prevent injected elements from breaking layout logic */
+    #report-content .report-section {
+        margin-bottom: 2rem;
+    }
+    #report-content h2, #report-content h3 {
+        color: inherit;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        border-bottom: 1px solid rgba(156, 163, 175, 0.2);
+        padding-bottom: 0.5rem;
+    }
+    
+    #report-content table {
+        width: 100%;
+        text-align: left;
+        border-collapse: collapse;
+        margin-top: 1rem;
+    }
+    #report-content th {
+        background-color: rgba(156, 163, 175, 0.1);
+        padding: 0.75rem 1rem;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-weight: 500;
+        color: rgba(156, 163, 175, 1);
+    }
+    #report-content td {
+        padding: 1rem;
+        border-bottom: 1px solid rgba(156, 163, 175, 0.1);
+        font-size: 0.875rem;
+    }
+    #report-content tr:hover td {
+        background-color: rgba(156, 163, 175, 0.05);
+    }
+    
+    .badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.25rem 0.5rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        border: 1px solid transparent;
+    }
+    .badge-critical { background-color: rgba(239, 68, 68, 0.1); color: #EF4444; border-color: rgba(239, 68, 68, 0.2); }
+    .badge-high { background-color: rgba(249, 115, 22, 0.1); color: #F97316; border-color: rgba(249, 115, 22, 0.2); }
+    .badge-medium { background-color: rgba(234, 179, 8, 0.1); color: #EAB308; border-color: rgba(234, 179, 8, 0.2); }
+    .badge-low { background-color: rgba(34, 197, 94, 0.1); color: #22C55E; border-color: rgba(34, 197, 94, 0.2); }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/report.js"></script>
+{% endblock %}

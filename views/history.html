@@ -1,0 +1,116 @@
+{% extends 'partials/layout.html' %}
+{% set active_page = 'history' %}
+
+{% block title %}ReconX | Scan History{% endblock %}
+
+{% block header_title %}
+<h2 class="text-lg font-semibold text-gray-800 dark:text-gray-100 hidden sm:block">Operation History</h2>
+{% endblock %}
+
+{% block content %}
+<div class="w-full animate-slide-up">
+  <div class="glass-card p-6 border-b border-gray-200 dark:border-white/5 flex justify-between items-center bg-white/50 dark:bg-cyber-background/50 backdrop-blur-md sticky top-16 z-10 rounded-b-none">
+    <h1 class="text-2xl font-bold tracking-tight">Scan History Log</h1>
+  </div>
+  
+  <div class="glass-card mt-0 rounded-t-none overflow-hidden relative min-h-[300px]">
+    <div id="loading" class="absolute inset-0 flex flex-col justify-center items-center bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm z-10 transition-opacity">
+       <i class="ph ph-spinner-gap text-4xl text-cyber-accent animate-spin mb-4"></i>
+       <p class="text-gray-500 dark:text-gray-400 font-medium">Retrieving scan history...</p>
+    </div>
+
+    <div id="error-msg" class="hidden m-6 p-4 bg-red-100 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-xl text-red-600 dark:text-red-400 text-sm font-medium text-center"></div>
+
+    <div id="empty-msg" class="hidden flex-col items-center justify-center p-12 text-center">
+      <div class="w-20 h-20 bg-gray-100 dark:bg-white/5 rounded-full flex items-center justify-center text-4xl text-gray-400 mb-6">
+        <i class="ph-bold ph-magnifying-glass"></i>
+      </div>
+      <h3 class="text-xl font-bold mb-2">No Operations Found</h3>
+      <p class="text-gray-500 dark:text-gray-400 mb-6 max-w-sm mx-auto">You haven't initialized any vulnerability scans yet. Start your first scan to populate this view.</p>
+      <a href="/scan" class="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-cyber-accent to-emerald-400 text-white font-semibold text-sm btn-glow">
+        <i class="ph-bold ph-rocket-launch"></i> Initialize Scan
+      </a>
+    </div>
+
+    <div class="overflow-x-auto w-full">
+      <table id="history-table" class="hidden w-full text-left border-collapse">
+        <thead>
+          <tr class="bg-gray-50 dark:bg-white/5 text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400">
+            <th class="px-6 py-4 font-medium">Target Domain</th>
+            <th class="px-6 py-4 font-medium">Scan Date</th>
+            <th class="px-6 py-4 font-medium">Candidates Analyzed</th>
+            <th class="px-6 py-4 font-medium text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="history-body" class="divide-y divide-gray-200 dark:divide-white/5">
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function loadHistory() {
+  const loading = document.getElementById('loading');
+  const table = document.getElementById('history-table');
+  const tbody = document.getElementById('history-body');
+  const emptyMsg = document.getElementById('empty-msg');
+  const errorMsg = document.getElementById('error-msg');
+
+  try {
+    const resp = await fetch('/get_history');
+    if (resp.status === 401) {
+      window.location.href = '/login';
+      return;
+    }
+    if (!resp.ok) throw new Error('Failed to load history');
+
+    const data = await resp.json();
+    const history = data.history || [];
+
+    loading.classList.add('hidden');
+
+    if (history.length === 0) {
+      emptyMsg.classList.remove('hidden');
+      emptyMsg.classList.add('flex');
+    } else {
+      table.classList.remove('hidden');
+      tbody.innerHTML = history.map(item => `
+        <tr class="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors group">
+            <td class="px-6 py-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-gray-100 dark:bg-white/10 flex items-center justify-center text-gray-500 dark:text-gray-300 group-hover:bg-cyber-accent/20 group-hover:text-cyber-accent transition-colors"><i class="ph-fill ph-globe"></i></div>
+                    <span class="font-medium text-sm text-gray-800 dark:text-gray-100">${escapeHtml(item.domain)}</span>
+                </div>
+            </td>
+            <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">${new Date(item.scanned_at).toLocaleString()}</td>
+            <td class="px-6 py-4">
+                <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400 border border-blue-200 dark:border-blue-500/20">
+                    <i class="ph-bold ph-hash mr-1"></i> ${item.candidates} Found
+                </span>
+            </td>
+            <td class="px-6 py-4 text-right">
+                <a href="/report?report_id=${item.report_id}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-white/10 hover:text-cyber-accent transition-all dark:text-gray-300">
+                    <i class="ph ph-file-text"></i> View
+                </a>
+            </td>
+        </tr>
+      `).join('');
+    }
+  } catch (err) {
+    loading.classList.add('hidden');
+    errorMsg.textContent = err.message;
+    errorMsg.classList.remove('hidden');
+  }
+}
+
+function escapeHtml(text) {
+  if (!text) return "";
+  return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+}
+
+document.addEventListener('DOMContentLoaded', loadHistory);
+</script>
+{% endblock %}

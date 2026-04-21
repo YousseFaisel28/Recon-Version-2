@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ReconX | Deploy Account</title>
+  
+  <script>
+    // Early theme initialization
+    (function() {
+      const theme = localStorage.getItem('theme');
+      if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark', 'dark-mode');
+      } else {
+        document.documentElement.classList.remove('dark', 'dark-mode');
+      }
+    })();
+  </script>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'] },
+          colors: {
+            cyber: {
+              background: '#0B0F19',
+              card: 'rgba(255, 255, 255, 0.03)',
+              border: 'rgba(255, 255, 255, 0.08)',
+              accent: '#10B981',
+              accentGlow: 'rgba(16, 185, 129, 0.4)',
+              textPrimary: '#FFFFFF',
+              textSecondary: '#9CA3AF'
+            }
+          },
+          animation: {
+            'fade-in': 'fadeIn 0.5s ease-out',
+            'slide-up': 'slideUp 0.6s ease-out'
+          },
+          keyframes: {
+            fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+            slideUp: { '0%': { opacity: '0', transform: 'translateY(10px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } }
+          }
+        }
+      }
+    }
+  </script>
+  
+  <style>
+    body { background: radial-gradient(circle at top right, #111827, #0B0F19 100%); color: #FFFFFF; min-height: 100vh; }
+    .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5); border-radius: 20px; transition: all 0.3s ease; }
+    .form-input { width: 100%; padding: 0.875rem 1.25rem; border-radius: 12px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: white; outline: none; transition: all 0.2s; font-size: 0.95rem; }
+    .form-input:focus { border-color: #10B981; box-shadow: 0 0 10px rgba(16, 185, 129, 0.2); background: rgba(0,0,0,0.4); }
+    .btn-glow { box-shadow: 0 0 15px rgba(16, 185, 129, 0.3); transition: all 0.3s; }
+    .btn-glow:hover { box-shadow: 0 0 25px rgba(16, 185, 129, 0.5); transform: translateY(-1px); }
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #1F2937; border-radius: 4px; }
+  </style>
+</head>
+
+<body class="flex items-center justify-center relative overflow-x-hidden min-h-screen py-10">
+  
+  <div class="absolute top-0 right-0 -mt-20 -mr-20 w-96 h-96 bg-cyber-accentglow rounded-full blur-[100px] pointer-events-none opacity-30 fixed"></div>
+  <div class="absolute bottom-0 left-0 -mb-20 -ml-20 w-80 h-80 bg-blue-500/20 rounded-full blur-[100px] pointer-events-none opacity-30 fixed"></div>
+
+  <div class="w-full max-w-xl px-4 md:px-6 animate-slide-up relative z-10 w-full">
+    <div class="glass-card p-6 md:p-10">
+      
+      <div class="flex justify-center mb-6">
+        <a href="/home"><img src="/static/assets/images/logo.png" alt="ReconX Logo" class="h-10 w-auto drop-shadow-lg object-contain hover:scale-105 transition-transform" onerror="this.outerHTML='<i class=\\\'ph-fill ph-shield-check text-4xl text-cyber-accent\\\'></i>'" /></a>
+      </div>
+
+      <div class="text-center mb-8">
+        <h1 class="text-2xl font-bold tracking-tight text-white mb-2">Deploy Account</h1>
+        <p class="text-sm text-cyber-textSecondary">Initialize your vulnerability scanning engine</p>
+      </div>
+
+      <form id="signupForm" class="space-y-5">
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div>
+            <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2" for="name">Operator Name</label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none"><i class="ph text-gray-500 text-lg ph-user"></i></div>
+              <input id="name" type="text" placeholder="John Doe" required class="form-input pl-11" />
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2" for="email">Email Address</label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none"><i class="ph text-gray-500 text-lg ph-envelope"></i></div>
+              <input id="email" type="email" placeholder="agent@reconx.io" required class="form-input pl-11" />
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1" for="domain">Primary Target Domain</label>
+          <p class="text-xs text-gray-500 mb-2">The main domain associated with your operator account</p>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none"><i class="ph text-gray-500 text-lg ph-globe"></i></div>
+            <input id="domain" type="text" placeholder="example.com" required class="form-input pl-11" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 gap-5 mt-2">
+          <div>
+            <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2" for="password">Security Key</label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none"><i class="ph text-gray-500 text-lg ph-lock-key"></i></div>
+              <input id="password" type="password" placeholder="••••••••" required class="form-input pl-11" />
+            </div>
+            <!-- Requirements matched to JS script targets -->
+            <div class="mt-2 text-xs flex flex-col gap-1 password-requirements">
+               <div id="strengthContainer" class="w-full h-1 bg-white/10 rounded-full overflow-hidden mb-1" style="display:none;">
+                  <div id="strengthFill" class="h-full w-0 transition-all duration-300"></div>
+               </div>
+               <p id="strengthLabel" class="text-right text-xs mb-2" style="display:none;"></p>
+               <p id="req-length" class="text-gray-500 flex items-center gap-1 transition-colors duration-300 invalid"><i class="ph-fill ph-x-circle text-red-500"></i> <span class="text-gray-400">8 characters or more</span></p>
+               <p id="req-upper" class="text-gray-500 flex items-center gap-1 transition-colors duration-300 invalid"><i class="ph-fill ph-x-circle text-red-500"></i> <span class="text-gray-400">At least one uppercase</span></p>
+               <p id="req-number" class="text-gray-500 flex items-center gap-1 transition-colors duration-300 invalid"><i class="ph-fill ph-x-circle text-red-500"></i> <span class="text-gray-400">At least one number</span></p>
+               <p id="req-special" class="text-gray-500 flex items-center gap-1 transition-colors duration-300 invalid"><i class="ph-fill ph-x-circle text-red-500"></i> <span class="text-gray-400">At least one special character</span></p>
+            </div>
+            <!-- To make signup.js logic work out-of-the-box modifying icons rather than text blindly -->
+            <style>
+              .password-requirements p.valid i.ph-x-circle { display: none !important; }
+              .password-requirements p.valid::before { content: "✓ "; color: #10B981; font-weight: bold; margin-right: 4px; }
+              .strength-weak { background-color: #ef4444; color: #ef4444; }
+              .strength-medium { background-color: #eab308; color: #eab308; }
+              .strength-strong { background-color: #22c55e; color: #22c55e; }
+            </style>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2" for="confirmPassword">Confirm Key</label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none"><i class="ph text-gray-500 text-lg ph-check-circle"></i></div>
+              <input id="confirmPassword" type="password" placeholder="••••••••" required class="form-input pl-11" />
+            </div>
+            <p id="matchText" class="text-xs mt-2"></p>
+          </div>
+        </div>
+
+        <button type="submit" class="w-full flex justify-center items-center gap-2 py-3.5 px-4 border border-transparent rounded-xl shadow-sm text-sm font-bold text-white bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 btn-glow mt-4">
+          Deploy Engine <i class="ph-bold ph-rocket-launch"></i>
+        </button>
+      </form>
+
+      <div class="mt-6 text-center border-t border-white/10 pt-6">
+        <p class="text-sm text-gray-400">
+          Already active? 
+          <a href="/login.html" class="font-medium text-cyber-accent hover:text-emerald-400 transition-colors hover:underline">Authenticate here</a>
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="/static/js/signup.js"></script>
+</body>
+</html>
