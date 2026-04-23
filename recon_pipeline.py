@@ -2,6 +2,8 @@ import os
 import subprocess
 import json
 import logging
+import socket
+import time
 from typing import List, Dict, Any
 
 # Configure logging
@@ -81,54 +83,72 @@ class Model2_PortScanning:
 
         for target in targets:
             ports = set()
+            scan_target = target
+            
+            # DNS Resolution Fallback
             try:
-                # RustScan: rustscan.exe -a {target} -r 1-65535 -g (for grepable/easy parsing)
-                logging.info(f"Running RustScan on {target}")
-                result = subprocess.run(
-                    [self.rustscan_path, '-a', target, '-r', '1-65535', '-g'],
-                    capture_output=True, text=True
-                )
-                
-                # Output might look like: Open 127.0.0.1:80 or json if supported
-                # We do simple parsing
-                if result.stdout:
-                    for line in result.stdout.split('\n'):
-                        if '->' in line and '[' in line:
-                            # Typical rustscan grepable output parsing
-                            parts = line.split('[')
-                            if len(parts) > 1:
-                                port_str = parts[1].replace(']', '')
-                                for p in port_str.split(','):
-                                    if p.strip().isdigit():
-                                        ports.add(int(p.strip()))
-                        elif "Open" in line:
-                            # parse "Open 127.0.0.1:80"
-                            parts = line.split(':')
-                            if len(parts) > 1 and parts[-1].strip().isdigit():
-                                ports.add(int(parts[-1].strip()))
-            except Exception as e:
-                logging.error(f"RustScan failed on {target}: {e}")
+                scan_target = socket.gethostbyname(target)
+                logging.info(f"Resolved {target} to {scan_target}")
+            except socket.gaierror:
+                logging.warning(f"Could not resolve IP for {target}, using hostname directly.")
 
-            try:
-                # Masscan: masscan.exe {target} -p1-65535 --rate 1000 -oJ masscan.json
-                logging.info(f"Running Masscan on {target}")
-                subprocess.run(
-                    [self.masscan_path, target, '-p1-65535', '--rate', '1000', '-oJ', 'masscan.json'],
-                    capture_output=True, text=True
-                )
-                if os.path.exists('masscan.json'):
-                    with open('masscan.json', 'r') as f:
-                        try:
-                            data = json.load(f)
-                            for entry in data:
-                                if 'ports' in entry:
-                                    for pinfo in entry['ports']:
-                                        if 'port' in pinfo:
-                                            ports.add(int(pinfo['port']))
-                        except json.JSONDecodeError:
-                            pass
-            except Exception as e:
-                logging.error(f"Masscan failed on {target}: {e}")
+            # Run RustScan if it exists
+            if os.path.exists(self.rustscan_path) and os.access(self.rustscan_path, os.X_OK):
+                try:
+                    # RustScan: rustscan.exe -a {target} -r 1-65535 -g (for grepable/easy parsing)
+                    logging.info(f"Running RustScan on {scan_target}")
+                    result = subprocess.run(
+                        [self.rustscan_path, '-a', scan_target, '-r', '1-65535', '-g'],
+                        capture_output=True, text=True
+                    )
+                    
+                    # Output might look like: Open 127.0.0.1:80 or json if supported
+                    # We do simple parsing
+                    if result.stdout:
+                        for line in result.stdout.split('\n'):
+                            if '->' in line and '[' in line:
+                                # Typical rustscan grepable output parsing
+                                parts = line.split('[')
+                                if len(parts) > 1:
+                                    port_str = parts[1].replace(']', '')
+                                    for p in port_str.split(','):
+                                        if p.strip().isdigit():
+                                            ports.add(int(p.strip()))
+                            elif "Open" in line:
+                                # parse "Open 127.0.0.1:80"
+                                parts = line.split(':')
+                                if len(parts) > 1 and parts[-1].strip().isdigit():
+                                    ports.add(int(parts[-1].strip()))
+                except Exception as e:
+                    logging.error(f"RustScan failed on {scan_target}: {e}")
+            else:
+                logging.warning(f"RustScan not found or not executable at {self.rustscan_path}. Skipping.")
+
+            # Run Masscan if it exists
+            if os.path.exists(self.masscan_path) and os.access(self.masscan_path, os.X_OK):
+                try:
+                    # Masscan: masscan.exe {target} -p1-65535 --rate 1000 -oJ masscan.json
+                    logging.info(f"Running Masscan on {scan_target} (Requires Admin)")
+                    # Added shell=True for raw socket requirements on Windows
+                    subprocess.run(
+                        f"{self.masscan_path} {scan_target} -p1-65535 --rate 1000 -oJ masscan.json",
+                        capture_output=True, text=True, shell=True
+                    )
+                    if os.path.exists('masscan.json'):
+                        with open('masscan.json', 'r') as f:
+                            try:
+                                data = json.load(f)
+                                for entry in data:
+                                    if 'ports' in entry:
+                                        for pinfo in entry['ports']:
+                                            if 'port' in pinfo:
+                                                ports.add(int(pinfo['port']))
+                            except json.JSONDecodeError:
+                                pass
+                except Exception as e:
+                    logging.error(f"Masscan failed on {scan_target}: {e}")
+            else:
+                logging.warning(f"Masscan not found or not executable at {self.masscan_path}. Skipping.")
 
             if ports:
                 open_ports[target] = list(ports)
@@ -182,6 +202,16 @@ class Model3_FingerprintingAndVulns:
                 [self.httpx_path, '-l', 'urls.txt', '-json', '-silent', '-tech-detect'],
                 capture_output=True, text=True
             )
+            
+            # Implementation of httpx retry mechanism
+            if not result.stdout.strip():
+                logging.warning("No httpx output received. Retrying with a slower rate limit to bypass potential firewalls...")
+                time.sleep(2)
+                result = subprocess.run(
+                    [self.httpx_path, '-l', 'urls.txt', '-json', '-silent', '-tech-detect', '-rl', '50'],
+                    capture_output=True, text=True
+                )
+
             for line in result.stdout.strip().split('\n'):
                 if line:
                     try:
@@ -254,21 +284,29 @@ class Model4_AnomalyDetection:
     def run(self, fingerprint_data: Dict[str, Any]) -> List[Dict[str, Any]]:
         logging.info("Running Model 4 (Anomaly Detection)")
         
-        # In a real scenario, we'd parse katana 'endpoints' or 'tech_stack' to build features
-        # Here we simulate feature extraction from lengths of responses, status codes, etc.
         features = []
         logs = fingerprint_data.get("endpoints", [])
         
-        if not logs:
-            logging.info("No logs for anomaly detection.")
-            return []
-
+        # Extract features from live traffic endpoints
         for log in logs:
             status = log.get("response", {}).get("status_code", 200)
             length = log.get("response", {}).get("content_length", 0)
             features.append([status, length])
             
+        # FIX 4: If no live traffic data (endpoints) is available, use historical header data from tech_stack
         if not features:
+            logging.info("No live endpoints captured. Falling back to historical HTTP header data (tech_stack) for anomaly ingestion.")
+            fallback_logs = fingerprint_data.get("tech_stack", [])
+            for tech in fallback_logs:
+                # Httpx tech stack data contains 'status_code' and sometimes 'content_length'
+                status = tech.get("status_code", 200)
+                length = tech.get("content_length", 0)
+                features.append([status, length])
+                # Wrap it to mimic endpoint structure for downstream processing
+                logs.append(tech)
+
+        if not features:
+            logging.info("No logs or tech stack data for anomaly detection.")
             return []
             
         data = np.array(features, dtype=np.float32)
@@ -326,7 +364,7 @@ class Model5_ExploitationStrategy:
                 for p in ports[sub]:
                     port_node = f"{sub}:{p}"
                     self.graph.add_node(port_node, type="port", number=p)
-                    self.graph.add_edge(sub, port_node, weight=1)
+                    self.graph.add_edge(sub, port_node, weight=1, label="Service Edge")
 
         # Add vulnerabilities as paths or weights
         for vuln in vulnerabilities:
@@ -338,7 +376,12 @@ class Model5_ExploitationStrategy:
                 
                 vuln_node = f"Vuln_{vuln.get('template-id')}_{host}"
                 self.graph.add_node(vuln_node, type="vulnerability")
-                self.graph.add_edge(host, vuln_node, weight=weight)
+                
+                # Enhanced Graph Mapping: Link critical/high severity vulns as "Active Entry Point"
+                if severity in ["critical", "high"]:
+                    self.graph.add_edge(host, vuln_node, weight=weight, label="Active Entry Point")
+                else:
+                    self.graph.add_edge(host, vuln_node, weight=weight)
                 
                 # Assume vuln leads to internal asset
                 internal_asset = "Internal_Asset_X"

@@ -167,8 +167,12 @@ def scan_domain():
                 # --- MULTI-MODEL COLLECTION ---
                 # Run HTTP Analysis and Traffic Capture in Parallel
                 with ThreadPoolExecutor(max_workers=2) as coll_exec:
-                    http_future = coll_exec.submit(collect_http_features, url)
                     traffic_future = coll_exec.submit(capture_traffic, subdomain, duration=3)
+                    
+                    # Allow scapy sniff to initialize before making the HTTP request
+                    time.sleep(1) 
+                    
+                    http_future = coll_exec.submit(collect_http_features, url)
                     
                     features = http_future.result()
                     traffic_features = traffic_future.result()
