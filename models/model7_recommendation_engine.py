@@ -243,15 +243,30 @@ class RecommendationEngine:
             exploit_search = vuln.get("exploit_db_reference") or []
             has_exploit = len(exploit_search) > 0
             
-            #  Strict Risk Scoring ---
-            conf_level = "LOW"
-            if vuln.get("vulnerability_status") == "vulnerable": # exact match confirmed in Model 3
+            #  Strict Risk Scoring (Updated for Active Validator) ---
+            validation_status = vuln.get("validation_status")
+            
+            if validation_status == "Exploitable":
+                conf_level = "HIGH"
+                justification = "Confidence 'HIGH' (VERIFIED) assigned based on successful active exploit simulation (Nuclei)."
+            elif validation_status == "Patched":
+                conf_level = "PATCHED"
+                model6_severity = "PATCHED"
+                justification = "SUCCESS: Active simulation confirmed this vulnerability has been PATCHED."
+            elif validation_status == "Blocked by WAF":
+                conf_level = "MITIGATED"
+                model6_severity = "BLOCKED"
+                justification = "PROTECTED: Active simulation confirmed this vulnerability is BLOCKED by a WAF."
+            elif vuln.get("vulnerability_status") == "vulnerable": # Version match only
                 if has_exploit:
                     conf_level = "HIGH"
+                    justification = "Confidence 'HIGH' assigned based on version match and public exploit availability."
                 else:
                     conf_level = "MEDIUM"
+                    justification = "Confidence 'MEDIUM' assigned based on confirmed version match (Theoretical)."
             else:
                 conf_level = "LOW"
+                justification = "Confidence 'LOW' assigned due to lack of verifiable active simulation data."
 
             rec_obj = {
                 "host": host,
@@ -268,14 +283,14 @@ class RecommendationEngine:
                 "references": references[:5], 
                 "priority": priority,
                 "confidence_level": conf_level,
-                "justification": f"Confidence '{conf_level}' assigned based on strict validation logic (Task 6)."
+                "justification": justification
             }
             
             self.save_recommendation_to_db(rec_obj)
             recommendations.append(rec_obj)
 
-        # Sort recommendations: Critical > High > Medium > Low
-        priority_map = {"CRITICAL": 4, "HIGH": 3, "MEDIUM": 2, "LOW": 1}
+        # Sort recommendations: Critical > High > Medium > Low > Patched/Blocked
+        priority_map = {"CRITICAL": 4, "HIGH": 3, "MEDIUM": 2, "LOW": 1, "PATCHED": 0, "BLOCKED": 0}
         recommendations.sort(key=lambda x: priority_map.get(x["priority"], 0), reverse=True)
 
         return recommendations
