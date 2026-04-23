@@ -15,3 +15,6 @@ pdfkit
 python-dotenv
 google-generativeai
 Flask-Limiter
+tensorflow
+networkx
+neo4j
