@@ -4,7 +4,19 @@ import json
 import logging
 import socket
 import time
+import urllib.request
+import urllib.error
+import concurrent.futures
+import uuid
+from datetime import datetime
 from typing import List, Dict, Any
+from recon_ml_enhancements import (
+    run_subdomain_clustering,
+    ServiceClassifier,
+    MLHeuristicFilter,
+    LSTMAnomalyDetector,
+    MLRiskScorer
+)
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -64,17 +76,24 @@ class Model1_Discovery:
         # Adding the root domain itself just in case
         subdomains.add(target)
         
-        logging.info(f"Model 1 found {len(subdomains)} unique subdomains.")
-        return list(subdomains)
+        sub_list = list(subdomains)
+        logging.info(f"Model 1 found {len(sub_list)} unique subdomains.")
+        
+        # ML Integration: Clustering & Anomaly Detection
+        cluster_results = run_subdomain_clustering(sub_list)
+        anomalies = cluster_results.get("anomalies", [])
+        if anomalies:
+            logging.warning(f"ML Model 1 flagged {len(anomalies)} anomalous subdomains (outliers): {anomalies}")
+            
+        return sub_list
 
 
 class Model2_PortScanning:
     """
     Model 2: High-Speed Port Scanning
-    Uses rustscan and masscan to find open ports.
+    Uses masscan exclusively to find open ports (RustScan removed to eliminate redundancy).
     """
     def __init__(self):
-        self.rustscan_path = os.path.abspath('rustscan.exe')
         self.masscan_path = os.path.abspath('masscan.exe')
 
     def run(self, targets: List[str]) -> Dict[str, List[int]]:
@@ -92,38 +111,6 @@ class Model2_PortScanning:
             except socket.gaierror:
                 logging.warning(f"Could not resolve IP for {target}, using hostname directly.")
 
-            # Run RustScan if it exists
-            if os.path.exists(self.rustscan_path) and os.access(self.rustscan_path, os.X_OK):
-                try:
-                    # RustScan: rustscan.exe -a {target} -r 1-65535 -g (for grepable/easy parsing)
-                    logging.info(f"Running RustScan on {scan_target}")
-                    result = subprocess.run(
-                        [self.rustscan_path, '-a', scan_target, '-r', '1-65535', '-g'],
-                        capture_output=True, text=True
-                    )
-                    
-                    # Output might look like: Open 127.0.0.1:80 or json if supported
-                    # We do simple parsing
-                    if result.stdout:
-                        for line in result.stdout.split('\n'):
-                            if '->' in line and '[' in line:
-                                # Typical rustscan grepable output parsing
-                                parts = line.split('[')
-                                if len(parts) > 1:
-                                    port_str = parts[1].replace(']', '')
-                                    for p in port_str.split(','):
-                                        if p.strip().isdigit():
-                                            ports.add(int(p.strip()))
-                            elif "Open" in line:
-                                # parse "Open 127.0.0.1:80"
-                                parts = line.split(':')
-                                if len(parts) > 1 and parts[-1].strip().isdigit():
-                                    ports.add(int(parts[-1].strip()))
-                except Exception as e:
-                    logging.error(f"RustScan failed on {scan_target}: {e}")
-            else:
-                logging.warning(f"RustScan not found or not executable at {self.rustscan_path}. Skipping.")
-
             # Run Masscan if it exists
             if os.path.exists(self.masscan_path) and os.access(self.masscan_path, os.X_OK):
                 try:
@@ -135,16 +122,17 @@ class Model2_PortScanning:
                         capture_output=True, text=True, shell=True
                     )
                     if os.path.exists('masscan.json'):
-                        with open('masscan.json', 'r') as f:
-                            try:
+                        try:
+                            with open('masscan.json', 'r') as f:
                                 data = json.load(f)
-                                for entry in data:
-                                    if 'ports' in entry:
-                                        for pinfo in entry['ports']:
-                                            if 'port' in pinfo:
-                                                ports.add(int(pinfo['port']))
-                            except json.JSONDecodeError:
-                                pass
+                            for entry in data:
+                                if 'ports' in entry:
+                                    for pinfo in entry['ports']:
+                                        port_val = pinfo.get('port')
+                                        if port_val and str(port_val).isdigit():
+                                            ports.add(int(port_val))
+                        except (json.JSONDecodeError, OSError) as e:
+                            logging.error(f"Failed to read/parse masscan.json: {e}")
                 except Exception as e:
                     logging.error(f"Masscan failed on {scan_target}: {e}")
             else:
@@ -165,6 +153,23 @@ class Model3_FingerprintingAndVulns:
         self.httpx_path = os.path.expanduser('~\\go\\bin\\httpx.exe')
         self.katana_path = os.path.expanduser('~\\go\\bin\\katana.exe')
         self.nuclei_path = os.path.expanduser('~\\go\\bin\\nuclei.exe')
+        self.ffuf_path = os.path.expanduser('~\\go\\bin\\ffuf.exe')
+        self.ml_filter = MLHeuristicFilter()
+
+    def heuristic_confidence_scorer(self, vulns: List[Dict]) -> List[Dict]:
+        """
+        ML Integration: Uses Decision Tree to filter out false positives.
+        """
+        filtered = []
+        for v in vulns:
+            prediction = self.ml_filter.predict_validity(v)
+            if prediction == 1:
+                v["heuristic_confidence_score"] = 1.0
+                filtered.append(v)
+            else:
+                logging.info(f"ML Filtered False Positive: {v.get('template-id')}")
+                
+        return filtered
 
     def run(self, scanned_targets: Dict[str, List[int]]) -> Dict[str, Any]:
         logging.info("Running Model 3 (Fingerprinting & Vulns)")
@@ -221,11 +226,11 @@ class Model3_FingerprintingAndVulns:
         except Exception as e:
             logging.error(f"httpx failed: {e}")
 
-        # katana
+        # katana (With JS Analysis)
         try:
-            logging.info("Executing katana...")
+            logging.info("Executing katana (with JS extraction)...")
             result = subprocess.run(
-                [self.katana_path, '-list', 'urls.txt', '-jsonl', '-silent'],
+                [self.katana_path, '-list', 'urls.txt', '-jc', '-jsline', '-em', 'js,json', '-jsonl', '-silent'],
                 capture_output=True, text=True
             )
             for line in result.stdout.strip().split('\n'):
@@ -237,6 +242,31 @@ class Model3_FingerprintingAndVulns:
         except Exception as e:
             logging.error(f"katana failed: {e}")
 
+        # ffuf (Directory Brute Forcing)
+        if os.path.exists(self.ffuf_path):
+            try:
+                logging.info("Executing ffuf for directory brute-forcing...")
+                # Assuming standard wordlist location; if not present, ffuf will quickly exit.
+                wordlist = "/usr/share/seclists/Discovery/Web-Content/raft-small-directories.txt"
+                if os.path.exists(wordlist):
+                    for url in urls[:3]: # Limit to top 3 for speed in pipeline
+                        subprocess.run(
+                            [self.ffuf_path, '-w', wordlist, '-u', f'{url}/FUZZ', '-mc', '200,301', '-o', 'ffuf_out.json', '-of', 'json', '-silent'],
+                            capture_output=True, text=True
+                        )
+                        if os.path.exists('ffuf_out.json'):
+                            with open('ffuf_out.json', 'r') as f:
+                                try:
+                                    data = json.load(f)
+                                    for entry in data.get('results', []):
+                                        results["endpoints"].append({"url": entry.get("url"), "status": entry.get("status")})
+                                except:
+                                    pass
+                else:
+                    logging.info("ffuf skipped: Wordlist not found.")
+            except Exception as e:
+                logging.error(f"ffuf failed: {e}")
+
         # nuclei
         try:
             logging.info("Executing nuclei...")
@@ -245,25 +275,32 @@ class Model3_FingerprintingAndVulns:
                 capture_output=True, text=True
             )
             if os.path.exists('nuclei_out.json'):
+                unique_vulns = {}
                 with open('nuclei_out.json', 'r') as f:
                     for line in f:
                         if line.strip():
                             try:
-                                results["vulnerabilities"].append(json.loads(line))
-                            except:
+                                v = json.loads(line)
+                                # Deduplication using stable composite key
+                                cve = v.get("template-id", "unknown")
+                                host = v.get("host", "unknown")
+                                port = str(v.get("port", "80"))
+                                path = v.get("matched-at", "unknown")
+                                key = f"{cve}::{host}::{port}::{path}"
+                                if key not in unique_vulns:
+                                    unique_vulns[key] = v
+                            except Exception:
                                 pass
+                results["vulnerabilities"] = list(unique_vulns.values())
+                
+                # Apply Phase 2 Heuristic Filtering
+                results["vulnerabilities"] = self.heuristic_confidence_scorer(results["vulnerabilities"])
+                
         except Exception as e:
             logging.error(f"nuclei failed: {e}")
 
         return results
 
-
-import numpy as np
-try:
-    from tensorflow.keras.models import Sequential, Model
-    from tensorflow.keras.layers import LSTM, Dense, Input
-except ImportError:
-    pass # Will be handled if missing at runtime
 
 class Model4_AnomalyDetection:
     """
@@ -271,15 +308,7 @@ class Model4_AnomalyDetection:
     Analyzes HTTP traffic logs captured by Katana/httpx.
     """
     def __init__(self):
-        self.model = None
-
-    def build_model(self, input_dim: int):
-        # Autoencoder using LSTM
-        inputs = Input(shape=(1, input_dim))
-        encoded = LSTM(16, activation='relu', return_sequences=False)(inputs)
-        decoded = Dense(input_dim, activation='sigmoid')(encoded)
-        self.model = Model(inputs, decoded)
-        self.model.compile(optimizer='adam', loss='mse')
+        self.lstm = LSTMAnomalyDetector()
 
     def run(self, fingerprint_data: Dict[str, Any]) -> List[Dict[str, Any]]:
         logging.info("Running Model 4 (Anomaly Detection)")
@@ -291,43 +320,28 @@ class Model4_AnomalyDetection:
         for log in logs:
             status = log.get("response", {}).get("status_code", 200)
             length = log.get("response", {}).get("content_length", 0)
-            features.append([status, length])
+            features.append((status, length))
             
-        # FIX 4: If no live traffic data (endpoints) is available, use historical header data from tech_stack
         if not features:
             logging.info("No live endpoints captured. Falling back to historical HTTP header data (tech_stack) for anomaly ingestion.")
             fallback_logs = fingerprint_data.get("tech_stack", [])
             for tech in fallback_logs:
-                # Httpx tech stack data contains 'status_code' and sometimes 'content_length'
                 status = tech.get("status_code", 200)
                 length = tech.get("content_length", 0)
-                features.append([status, length])
-                # Wrap it to mimic endpoint structure for downstream processing
+                features.append((status, length))
                 logs.append(tech)
 
         if not features:
             logging.info("No logs or tech stack data for anomaly detection.")
             return []
             
-        data = np.array(features, dtype=np.float32)
-        # Normalize
-        data = data / np.max(data, axis=0) if np.max(data) > 0 else data
-        data = data.reshape((data.shape[0], 1, data.shape[1]))
-        
-        if self.model is None:
-            self.build_model(input_dim=2)
-            # Dummy train on itself
-            self.model.fit(data, data.reshape(data.shape[0], 2), epochs=5, verbose=0)
-            
-        predictions = self.model.predict(data)
-        mse = np.mean(np.power(data.reshape(data.shape[0], 2) - predictions, 2), axis=1)
-        
-        threshold = np.percentile(mse, 95) # Top 5% are anomalies
+        # ML Integration: LSTM Fit & Predict
+        anomaly_flags = self.lstm.fit_predict(features)
         
         anomalies = []
-        for i, loss in enumerate(mse):
-            if loss > threshold:
-                logs[i]["anomaly_score"] = float(loss)
+        for i, is_anomaly in enumerate(anomaly_flags):
+            if is_anomaly == 1:
+                logs[i]["anomaly_score"] = 1.0 # Flagged
                 anomalies.append(logs[i])
                 
         logging.info(f"Detected {len(anomalies)} anomalies.")
@@ -335,6 +349,52 @@ class Model4_AnomalyDetection:
 
 import networkx as nx
 from neo4j import GraphDatabase
+
+EPSS_CACHE_FILE = "epss_cache.json"
+
+def _load_epss_cache() -> Dict[str, float]:
+    """Safely loads the EPSS cache."""
+    if not os.path.exists(EPSS_CACHE_FILE): return {}
+    try:
+        with open(EPSS_CACHE_FILE, 'r') as f: return json.load(f)
+    except Exception: return {}
+
+def _save_epss_cache(cache_data: Dict[str, float]) -> None:
+    """Safely saves the EPSS cache using a temporary file."""
+    tmp_file = f"{EPSS_CACHE_FILE}.tmp"
+    try:
+        with open(tmp_file, 'w') as f: json.dump(cache_data, f)
+        os.replace(tmp_file, EPSS_CACHE_FILE)
+    except Exception as e:
+        logging.error(f"Failed to save EPSS cache: {e}")
+
+def fetch_epss_score_reliable(cve_id: str, cvss_fallback: float = 0.0, max_retries: int = 3) -> float:
+    """Fetches EPSS score with exponential backoff and safe caching."""
+    if not cve_id or not cve_id.upper().startswith("CVE-"):
+        return cvss_fallback / 10.0
+        
+    cache = _load_epss_cache()
+    if cve_id in cache: return cache[cve_id]
+    
+    url = f"https://api.first.org/epss/api/v1/cve/{cve_id}"
+    for attempt in range(max_retries):
+        try:
+            req = urllib.request.Request(url, headers={'User-Agent': 'ReconX-Pipeline/1.0'})
+            with urllib.request.urlopen(req, timeout=5) as response:
+                data = json.loads(response.read().decode())
+                if data.get("data") and len(data["data"]) > 0:
+                    score = float(data["data"][0].get("epss", 0.0))
+                    cache[cve_id] = score
+                    _save_epss_cache(cache)
+                    return score
+                break
+        except urllib.error.URLError as e:
+            logging.warning(f"EPSS API error for {cve_id} (Attempt {attempt+1}/{max_retries}): {e}")
+            time.sleep(2 ** attempt)
+        except Exception:
+            break
+            
+    return cvss_fallback / 10.0
 
 class Model5_ExploitationStrategy:
     """
@@ -350,10 +410,17 @@ class Model5_ExploitationStrategy:
     def run(self, target: str, subdomains: List[str], ports: Dict[str, List[int]], vulnerabilities: List[Dict[str, Any]]) -> Dict[str, Any]:
         logging.info("Running Model 5 (Exploitation Strategy)")
         
-        # Build local NetworkX graph
-        self.graph.add_node("Internet", type="external")
-        self.graph.add_node(target, type="domain")
-        self.graph.add_edge("Internet", target, weight=1)
+        # Explicit Node Types
+        NODE_INTERNET = "internet"
+        NODE_DOMAIN = "domain"
+        NODE_VULN = "vulnerability"
+        NODE_INTERNAL = "internal_asset"
+        
+        # Build local NetworkX graph safely
+        self.graph.add_node("Internet", type=NODE_INTERNET, category="entry_point")
+        self.graph.add_node(target, type=NODE_DOMAIN, category="target")
+        if not self.graph.has_edge("Internet", target):
+            self.graph.add_edge("Internet", target, weight=1.0)
         
         for sub in subdomains:
             self.graph.add_node(sub, type="subdomain")
@@ -366,27 +433,68 @@ class Model5_ExploitationStrategy:
                     self.graph.add_node(port_node, type="port", number=p)
                     self.graph.add_edge(sub, port_node, weight=1, label="Service Edge")
 
+        # Fetch EPSS scores concurrently to avoid network bottleneck
+        cve_ids_with_cvss = []
+        for vuln in vulnerabilities:
+            if "template-id" in vuln:
+                cve_id = vuln.get("template-id")
+                severity = vuln.get("info", {}).get("severity", "info")
+                cvss_fallback = 0.0
+                if severity == "critical": cvss_fallback = 9.5
+                elif severity == "high": cvss_fallback = 7.5
+                elif severity == "medium": cvss_fallback = 5.0
+                elif severity == "low": cvss_fallback = 2.5
+                cve_ids_with_cvss.append((cve_id, cvss_fallback))
+                
+        epss_results = {}
+        if cve_ids_with_cvss:
+            with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+                future_to_cve = {executor.submit(fetch_epss_score_reliable, cve, fallback): cve for cve, fallback in cve_ids_with_cvss}
+                for future in concurrent.futures.as_completed(future_to_cve):
+                    cve = future_to_cve[future]
+                    try:
+                        epss_results[cve] = future.result()
+                    except Exception:
+                        epss_results[cve] = 0.0
+
         # Add vulnerabilities as paths or weights
         for vuln in vulnerabilities:
             host = vuln.get("host", "")
             if host:
-                # Lower weight = easier to exploit (Path of least resistance)
-                severity = vuln.get("info", {}).get("severity", "low")
-                weight = 1 if severity == "critical" else 2 if severity == "high" else 5
+                cve_id = vuln.get("template-id", "")
                 
-                vuln_node = f"Vuln_{vuln.get('template-id')}_{host}"
-                self.graph.add_node(vuln_node, type="vulnerability")
+                # Fetch Real EPSS Score from cached concurrent results
+                epss_prob = epss_results.get(cve_id, 0.0)
+                vuln["epss_score"] = epss_prob # Save for later aggregation
                 
-                # Enhanced Graph Mapping: Link critical/high severity vulns as "Active Entry Point"
-                if severity in ["critical", "high"]:
-                    self.graph.add_edge(host, vuln_node, weight=weight, label="Active Entry Point")
-                else:
-                    self.graph.add_edge(host, vuln_node, weight=weight)
+                # Weight based on real EPSS threat intelligence (High probability = Low weight/Easy Path)
+                weight = max(1.0, 10.0 - (epss_prob * 10.0))
+                
+                vuln_node = f"Vuln_{cve_id}_{host}"
+                
+                # Assign Contextual Node Category
+                service_name = vuln.get("info", {}).get("name", "Unknown Service").lower()
+                category = "web_service"
+                if "sql" in service_name: category = "database"
+                elif "ssh" in service_name: category = "remote_admin"
+                
+                if not self.graph.has_node(vuln_node):
+                    self.graph.add_node(vuln_node, type=NODE_VULN, category=category)
+                
+                # Contextual Edge Definition
+                edge_label = "Exploitable_Service"
+                if epss_prob > 0.5:
+                    edge_label = "High_Probability_Exploit_Path"
+                
+                if not self.graph.has_edge(host, vuln_node):
+                    self.graph.add_edge(host, vuln_node, weight=weight, label=edge_label)
                 
                 # Assume vuln leads to internal asset
                 internal_asset = "Internal_Asset_X"
-                self.graph.add_node(internal_asset, type="internal")
-                self.graph.add_edge(vuln_node, internal_asset, weight=1)
+                if not self.graph.has_node(internal_asset):
+                    self.graph.add_node(internal_asset, type=NODE_INTERNAL)
+                if not self.graph.has_edge(vuln_node, internal_asset):
+                    self.graph.add_edge(vuln_node, internal_asset, weight=1.0)
 
         # Find shortest path using Dijkstra
         paths = {}
@@ -421,7 +529,41 @@ class ReconPipeline:
         self.m3 = Model3_FingerprintingAndVulns()
         self.m4 = Model4_AnomalyDetection()
         self.m5 = Model5_ExploitationStrategy()
+        self.ml_svc_classifier = ServiceClassifier()
+        self.ml_risk_scorer = MLRiskScorer()
         
+    def generate_actionable_report(self, m6_records: List[Dict], resolved: List[Dict], attack_paths: Dict) -> Dict:
+            """
+            Phase 4: Elevating System Value
+            Generates a Nessus-style actionable report mapping to MITRE ATT&CK.
+            """
+            report = {
+                "Executive_Summary": {
+                    "Total_Vulnerabilities": len(m6_records),
+                    "New_Findings": sum(1 for r in m6_records if r.get("delta_status") == "[NEW]"),
+                    "Resolved_Findings": len(resolved),
+                    "Average_EPSS_Risk_Score": round(sum(r.get("epss_risk_score", 0) for r in m6_records) / max(1, len(m6_records)), 4)
+                },
+                "Vulnerabilities": [],
+                "Attack_Paths": attack_paths
+            }
+            
+            for rec in m6_records:
+                # Simulate MITRE mapping based on common CVE types
+                mitre_id = "T1190" # Exploit Public-Facing Application (Default)
+                if "sql" in rec.get("cve_id", "").lower(): mitre_id = "T1190"
+                elif "xss" in rec.get("cve_id", "").lower(): mitre_id = "T1059"
+                
+                report["Vulnerabilities"].append({
+                    "Target": rec["subdomain"],
+                    "CVE": rec["cve_id"],
+                    "EPSS_Risk_Score": rec.get("epss_risk_score", 0),
+                    "Delta_Status": rec.get("delta_status", "[EXISTING]"),
+                    "MITRE_ATT&CK": f"{mitre_id}",
+                    "Actionable_Remediation": f"Review {mitre_id} mitigation strategies. Isolate port {rec['port_number']} and apply vendor patches for {rec['cve_id']}."
+                })
+            return report
+
     def run_all(self, target: str):
         logging.info(f"--- Starting ReconPipeline for {target} ---")
         
@@ -431,8 +573,7 @@ class ReconPipeline:
         anomalies = self.m4.run(fingerprints_and_vulns)
         attack_paths = self.m5.run(target, subdomains, ports, fingerprints_and_vulns.get("vulnerabilities", []))
         
-        # Prepare data for Model 6
-        # Model 6 expects a list of dictionaries with features like cvss_score, subdomain_count, etc.
+        # Prepare data for Model 6 (With EPSS Risk Scoring)
         m6_records = []
         vulns = fingerprints_and_vulns.get("vulnerabilities", [])
         for v in vulns:
@@ -444,14 +585,27 @@ class ReconPipeline:
             elif severity == "medium": cvss = 5.0
             elif severity == "low": cvss = 2.5
             
+            exploit_available = 1 if "exploit" in str(v).lower() else 0
+            port_number = 80 # Simplified fallback
+            
+            # Use the real EPSS score fetched during the graph generation, default to 0.0
+            epss_prob = v.get("epss_score", 0.0)
+            
+            # ML Integration: Linear Regression for Risk Scoring
+            real_risk_score = self.ml_risk_scorer.predict_risk(cvss, epss_prob, exploit_available)
+            
+            # ML Integration: Random Forest for Service Classification
+            predicted_service = self.ml_svc_classifier.predict_service(port_number, "HTTP")
+            
             record = {
                 "domain": target,
                 "subdomain": v.get("host", target),
                 "cve_id": v.get("template-id", "N/A"),
-                "service_name": "HTTP", # Simplified
-                "port_number": 80, # Simplified
+                "service_name": predicted_service,
+                "port_number": port_number,
                 "cvss_score": v.get("info", {}).get("classification", {}).get("cvss-score", cvss),
-                "exploit_available": 1 if "exploit" in str(v).lower() else 0,
+                "epss_risk_score": real_risk_score, # Mathematically sound risk score
+                "exploit_available": exploit_available,
                 "subdomain_count": len(subdomains),
                 "exposed_service_count": sum(len(p) for p in ports.values()),
                 "is_public_port": 1,
@@ -461,6 +615,67 @@ class ReconPipeline:
             }
             m6_records.append(record)
 
+        # Phase 4: State Tracking (Delta Scans with Auditability & Robustness)
+        history_file = "scan_history.json"
+        resolve_threshold = 2
+        
+        previous_state = {}
+        if os.path.exists(history_file):
+            try:
+                with open(history_file, 'r') as f:
+                    previous_state = json.load(f)
+            except Exception as e:
+                logging.error(f"Failed to read scan history cleanly: {e}")
+                
+        scan_id = f"scan-{uuid.uuid4().hex[:8]}"
+        current_time = datetime.now().isoformat()
+                
+        current_state = {}
+        current_keys = set()
+        
+        for rec in m6_records:
+            key = f"{rec['cve_id']}_{rec['subdomain']}"
+            current_keys.add(key)
+            
+            if key not in previous_state:
+                rec["delta_status"] = "[NEW]"
+                rec["first_seen"] = current_time
+                rec["absent_count"] = 0
+            else:
+                rec["delta_status"] = "[EXISTING]"
+                rec["first_seen"] = previous_state[key].get("first_seen", current_time)
+                rec["absent_count"] = 0
+                
+            rec["last_seen"] = current_time
+            rec["scan_id"] = scan_id
+            current_state[key] = rec
+        
+        resolved_records = []
+        for key, old_rec in previous_state.items():
+            if key not in current_keys:
+                absent_count = old_rec.get("absent_count", 0) + 1
+                old_rec["absent_count"] = absent_count
+                
+                if absent_count >= resolve_threshold:
+                    old_rec["delta_status"] = "[RESOLVED]"
+                    old_rec["last_seen"] = current_time
+                    resolved_records.append(old_rec)
+                else:
+                    old_rec["delta_status"] = "[MISSING_PENDING_VERIFICATION]"
+                    current_state[key] = old_rec
+                
+        # Save new state safely
+        tmp_file = f"{history_file}.tmp"
+        try:
+            with open(tmp_file, 'w') as f:
+                json.dump(current_state, f, indent=4)
+            os.replace(tmp_file, history_file)
+        except Exception as e:
+            logging.error(f"Failed to save robust scan history: {e}")
+
+        # Phase 4: Generate Actionable Report
+        actionable_report = self.generate_actionable_report(m6_records, resolved_records, attack_paths)
+        
         logging.info("Pipeline Models 1-5 Complete.")
         
         # Return context that can be fed to Model 6 and 7
@@ -471,7 +686,9 @@ class ReconPipeline:
             "fingerprints_and_vulns": fingerprints_and_vulns,
             "anomalies": anomalies,
             "attack_paths": attack_paths,
-            "m6_ready_records": m6_records
+            "m6_ready_records": m6_records,
+            "actionable_report": actionable_report,
+            "resolved_findings": resolved_records
         }
 
 if __name__ == "__main__":
