@@ -306,7 +306,7 @@ class ExploitationStrategyGenerator:
                     "severity": severity,
                     "attack_chain": chain, # Can be None
                     "mitre_technique": mitre_tech,
-                    "exploit_db_reference": edb_findings if has_exploit_evidence else None,
+                    "exploit_db_reference": edb_findings if has_evidence else None,
                     "evidence_status": status,
                     "explanation": explanation
                 }
